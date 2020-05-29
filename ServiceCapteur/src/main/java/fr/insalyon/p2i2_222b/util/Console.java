@@ -7,29 +7,29 @@ import java.io.PrintStream;
 
 public class Console {
 
-    private final BufferedReader input;
-    private final PrintStream output = System.out;
-    private final PrintStream log = System.err;
+    private final BufferedReader in;
+    private final PrintStream out = System.out;
+    private final PrintStream err = System.err;
 
     public Console() {
-        this.input = new BufferedReader(new InputStreamReader(System.in));
+        this.in = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public String readLine(String prompt) throws IOException {
-        output.print(prompt);
-        output.flush();
-        return input.readLine();
+        out.print(prompt);
+        out.flush();
+        return in.readLine();
+    }
+
+    public void err(String line) {
+        err.println(line);
+    }
+
+    public void err(Throwable th) {
+        th.printStackTrace(err);
     }
 
     public void log(String line) {
-        log.println(line);
-    }
-
-    public void log(Throwable th) {
-        th.printStackTrace(log);
-    }
-
-    public void println(String line) {
-        output.println(line);
+        out.println(line);
     }
 }

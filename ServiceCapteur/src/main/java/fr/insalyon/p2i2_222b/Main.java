@@ -1,5 +1,6 @@
 package fr.insalyon.p2i2_222b;
 
+import fr.insalyon.p2i2_222b.sql.DBManager;
 import fr.insalyon.p2i2_222b.util.Console;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class Main {
         final Console console = new Console();
 
         // Affichage sur la console
-        console.log("ServiceCapteur v0.1.0");
+        console.err("ServiceCapteur v0.1.0");
 
         // Spécification des Ports UDP
         Integer udpListeningPort = 20001;
@@ -28,14 +29,20 @@ public class Main {
         try {
             ArduinoConnector arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort);
             arduino.setDataHandler((data) -> {
-                console.println("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + data);
+                console.log("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + data);
             });
 
-            console.log("DÉMARRAGE de la connexion (au simulateur)");
+            DBManager db = new DBManager("jdbc:h2:./test");
+            if (true) {
+                console.log("Mise en place de la BDD");
+                db.setupDB("../SQL/creationTables.sql");
+            }
+
+            console.err("DÉMARRAGE de la connexion (au simulateur)");
             // Connexion à l'Arduino
             arduino.start();
 
-            console.log("BOUCLE infinie en attente du Clavier");
+            console.err("BOUCLE infinie en attente du Clavier");
             // Boucle d'écriture sur l'Arduino (exécution concurrente au Thread qui écoute)
             boolean exit = false;
 
@@ -47,7 +54,7 @@ public class Main {
                 if (line.length() != 0) {
 
                     // Affichage sur l'écran
-                    console.log("CLAVIER >> " + line);
+                    console.err("CLAVIER >> " + line);
 
                     // Test de sortie de boucle
                     exit = line.equalsIgnoreCase("stop");
@@ -59,13 +66,13 @@ public class Main {
                 }
             }
 
-            console.log("ARRÊT de la connexion");
+            console.err("ARRÊT de la connexion");
             // Fin de la connexion à l'Arduino
             arduino.close();
 
         } catch (IOException ex) {
             // Si un problème a eu lieu...
-            console.log(ex);
+            console.err(ex);
         }
     }
 }
