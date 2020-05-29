@@ -33,3 +33,7 @@ shadowJar {
         attributes "Main-Class": mainClassName
     }
 }
+
+clean.doFirst {
+    delete "temp"
+}

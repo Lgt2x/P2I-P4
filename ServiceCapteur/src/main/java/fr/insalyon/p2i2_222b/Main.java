@@ -38,12 +38,6 @@ public class Main {
 
         try {
             arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort);
-        } catch (IOException e) {
-            console.err(e);
-            System.exit(-1);
-        }
-
-        try {
             arduino.setDataHandler((data) -> {
                 console.log("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + data);
             });
@@ -53,14 +47,14 @@ public class Main {
                 db.setupDB("/sql/creationTables.sql");
             }
 
-            console.err("DÉMARRAGE de la connexion au simulateur");
-            // Connexion à l'Arduino
+            console.log("DÉMARRAGE de la connexion au simulateur");
             arduino.start();
 
             Thread.currentThread().join();
         } catch (IOException | InterruptedException ex) {
-            // Si un problème a eu lieu...
+            // Ya une couille dans le pâté
             console.err(ex);
+            System.exit(-1);
         }
     }
 }
