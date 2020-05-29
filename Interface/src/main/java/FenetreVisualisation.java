@@ -1,8 +1,5 @@
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class FenetreVisualisation extends JFrame {
@@ -80,7 +77,25 @@ public class FenetreVisualisation extends JFrame {
         affNO2.setFont(policeValeurs);
         affNO2.setBounds(950, 150, 300, 50);
 
+        affO2 = new JLabel("Dioxygène : -- %");
+        affO2.setFont(policeValeurs);
+        affO2.setBackground(Color.green);
+        affO2.setBounds(1250,150,300,50);
+
+        JButton refresh = new JButton("Rafraîchir");
+        refresh.setBounds(1100,15,100,50);
+        refresh.setBackground(Color.green);
+        refresh.addActionListener(e -> {
+            try {
+                majMesures();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        });
+
         affInfoDirect.add(titre);
+        affInfoDirect.add(refresh);
+        affInfoDirect.add(affO2);
         affInfoDirect.add(affBruit);
         affInfoDirect.add(affHum);
         affInfoDirect.add(affLum);
@@ -115,7 +130,6 @@ public class FenetreVisualisation extends JFrame {
 
         Double[] rs;
         rs = bd.derniereMesure(bd.getIdStation(listeStations.getSelectedItem().toString()));
-        System.out.println(rs[0]);
 
         affNO2.setText("Oxyde d'Azote : " + rs[4] + " ppm");
         affCO2.setText("CO2 : " + rs[3] + " ppm");
@@ -125,6 +139,7 @@ public class FenetreVisualisation extends JFrame {
         affBruit.setText("Bruit : " + rs[5] + " dB");
         affHum.setText("Humidite : " + rs[1] + " %");
         affTemp.setText("Temperature : " + rs[0] + " °C");
+        affO2.setText("Dioxygène : "+rs[8]+" %");
 
         this.repaint();
     }

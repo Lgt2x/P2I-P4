@@ -104,7 +104,7 @@ public class LectureBase {
                 ResultSet rs = selectLastMesureStatement.executeQuery();
 
                 while (rs.next()) {
-                    valeurs[row] = rs.getDouble("valeur");
+                    valeurs[row-1] = rs.getDouble("valeur");
                 }
             }
 
