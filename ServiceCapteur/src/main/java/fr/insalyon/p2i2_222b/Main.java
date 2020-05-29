@@ -1,31 +1,32 @@
 package fr.insalyon.p2i2_222b;
 
-import fr.insalyon.p2i2_222b.usb.ArduinoSimulatorManager;
 import fr.insalyon.p2i2_222b.util.Console;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Point d'entrée.
+ */
 public class Main {
 
     public static SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         // Objet matérialisant la console d'exécution (Affichage Écran / Lecture Clavier)
         final Console console = new Console();
 
         // Affichage sur la console
-        console.log("DÉBUT du programme principal");
+        console.log("ServiceCapteur v0.1.0");
 
         // Spécification des Ports UDP
         Integer udpListeningPort = 20001;
         Integer udpSendingPort = 20002;
 
         try {
-
-            ArduinoSimulatorManager arduino = new ArduinoSimulatorManager(udpListeningPort, udpSendingPort) {
+            ArduinoConnector arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort) {
                 @Override
                 protected void onData(String line) {
 
@@ -73,7 +74,7 @@ public class Main {
 
             console.log("ARRÊT de la connexion");
             // Fin de la connexion à l'Arduino
-            arduino.stop();
+            arduino.close();
 
         } catch (IOException ex) {
             // Si un problème a eu lieu...

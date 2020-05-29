@@ -1,4 +1,4 @@
-package fr.insalyon.p2i2_222b.usb;
+package fr.insalyon.p2i2_222b;
 
 import fr.insalyon.p2i2_222b.util.Console;
 
@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ArduinoSimulatorManager {
+public class PacketTracerArduino implements ArduinoConnector {
 
     protected final Integer udpListeningPort;
     protected final Integer udpSendingPort;
@@ -25,7 +25,7 @@ public class ArduinoSimulatorManager {
 
     protected InetAddress localhostIpAddress;
 
-    public ArduinoSimulatorManager(Integer udpListeningPort, Integer udpSendingPort) throws IOException {
+    public PacketTracerArduino(Integer udpListeningPort, Integer udpSendingPort) throws IOException {
         this.udpListeningPort = udpListeningPort;
         this.udpSendingPort = udpSendingPort;
 
@@ -50,7 +50,7 @@ public class ArduinoSimulatorManager {
 
         try {
 
-            ArduinoSimulatorManager arduino = new ArduinoSimulatorManager(udpListeningPort, udpSendingPort) {
+            PacketTracerArduino arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort) {
                 @Override
                 protected void onData(String line) {
 
@@ -97,7 +97,7 @@ public class ArduinoSimulatorManager {
 
             console.log("ARRÊT de la connexion");
             // Fin de la connexion à l'Arduino
-            arduino.stop();
+            arduino.close();
 
         } catch (IOException ex) {
             // Si un problème a eu lieu...
@@ -112,59 +112,60 @@ public class ArduinoSimulatorManager {
 
         this.handlerThread = new Thread(() -> {
 
-            ArduinoSimulatorManager.this.handlerThreadRunning = true;
+            PacketTracerArduino.this.handlerThreadRunning = true;
 
             String queueData;
 
-            while (ArduinoSimulatorManager.this.handlerThreadRunning) {
+            while (PacketTracerArduino.this.handlerThreadRunning) {
                 try {
-                    queueData = ArduinoSimulatorManager.this.bufferQueue.take();
-                    ArduinoSimulatorManager.this.onData(queueData);
+                    queueData = PacketTracerArduino.this.bufferQueue.take();
+                    PacketTracerArduino.this.onData(queueData);
                 } catch (InterruptedException ex) {
                     // Ignore...
                 }
             }
 
-            ArduinoSimulatorManager.this.handlerThreadRunning = false;
+            PacketTracerArduino.this.handlerThreadRunning = false;
         });
 
         // Creation d'une tache qui va s'exécuter en parallèle du code séquentiel du main
         this.readingThread = new Thread(() -> {
 
-            ArduinoSimulatorManager.this.readingThreadRunning = true;
+            PacketTracerArduino.this.readingThreadRunning = true;
 
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
             try {
-                while (ArduinoSimulatorManager.this.readingThreadRunning) {
-                    ArduinoSimulatorManager.this.serverSocket.receive(receivePacket);
+                while (PacketTracerArduino.this.readingThreadRunning) {
+                    PacketTracerArduino.this.serverSocket.receive(receivePacket);
                     InetAddress ipAddress = receivePacket.getAddress();
                     int port = receivePacket.getPort();
                     String message = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength(), StandardCharsets.UTF_8);
                     //System.out.println("RECEIVED from " + ipAddress.getHostAddress() + ":" + port + " >> " + message);
 
                     try {
-                        ArduinoSimulatorManager.this.bufferQueue.put(message);
+                        PacketTracerArduino.this.bufferQueue.put(message);
                     } catch (InterruptedException ex) {
                         // Ignore...
                     }
                 }
 
             } catch (IOException ex) {
-                if (ArduinoSimulatorManager.this.readingThreadRunning) {
+                if (PacketTracerArduino.this.readingThreadRunning) {
                     ex.printStackTrace(System.err);
                 }
             }
 
-            ArduinoSimulatorManager.this.readingThreadRunning = false;
+            PacketTracerArduino.this.readingThreadRunning = false;
         });
 
         this.handlerThread.start();
         this.readingThread.start();
     }
 
-    public final void stop() throws IOException {
+    @Override
+    public final void close() throws IOException {
 
         this.readingThreadRunning = false;
 

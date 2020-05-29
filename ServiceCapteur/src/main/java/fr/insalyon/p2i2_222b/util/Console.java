@@ -7,18 +7,16 @@ import java.io.PrintStream;
 
 public class Console {
 
-    public final BufferedReader input;
-    public final PrintStream output = System.out;
-    public final PrintStream log = System.err;
+    private final BufferedReader input;
+    private final PrintStream output = System.out;
+    private final PrintStream log = System.err;
 
     public Console() {
-
         this.input = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    public String readLine(String header) throws IOException {
-
-        output.print(header);
+    public String readLine(String prompt) throws IOException {
+        output.print(prompt);
         output.flush();
         return input.readLine();
     }
@@ -34,5 +32,4 @@ public class Console {
     public void println(String line) {
         output.println(line);
     }
-
 }
