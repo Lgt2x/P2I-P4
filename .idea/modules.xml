@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/JavaArduino/JavaArduino.iml" filepath="$PROJECT_DIR$/JavaArduino/JavaArduino.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/P2I-P4.iml" filepath="$PROJECT_DIR$/.idea/P2I-P4.iml" />
+    </modules>
+  </component>
+</project>
