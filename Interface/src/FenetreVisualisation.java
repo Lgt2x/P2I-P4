@@ -101,7 +101,7 @@ public class FenetreVisualisation extends JFrame {
     public void majMesures() throws Exception {
         Double[] rs;
         rs = bd.derniereMesure();
-        System.out.println(rs[1]);
+        System.out.println(rs[0]);
 
         affNO2.setText("Oxyde d'Azote : "+rs[4]+" ppm");
         affCO2.setText("CO2 : "+rs[3]+" ppm");

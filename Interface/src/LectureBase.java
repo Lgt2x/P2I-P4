@@ -72,7 +72,7 @@ public class LectureBase {
                 ResultSet rs = selectMesuresStatement.executeQuery();
 
                 while (rs.next()) {
-                    valeurs[i]=rs.getDouble("valeur");
+                    valeurs[i-1]=rs.getDouble("valeur");
                 }
 
             }
