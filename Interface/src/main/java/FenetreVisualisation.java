@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 
 public class FenetreVisualisation extends JFrame {
+
     private JComboBox listeStations;
     private JLabel affTemp;
     private JLabel affHum;
@@ -19,6 +20,7 @@ public class FenetreVisualisation extends JFrame {
     private LectureBase bd;
 
     public FenetreVisualisation() throws Exception {
+
         super("Visualisation des données");
         this.setSize(1500, 700);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -31,6 +33,13 @@ public class FenetreVisualisation extends JFrame {
 
         listeStations = new JComboBox();
         listeStations.setBounds(850, 15, 150, 50);
+        listeStations.addActionListener(e -> {
+            try {
+                majMesures();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        });
 
 
         JLabel titre = new JLabel("Données actuelles de la station");
@@ -88,21 +97,24 @@ public class FenetreVisualisation extends JFrame {
 
         bd = new LectureBase();
         bd.connexionBD();
-        recupNomStation();
+        recupNomsStations();
         majMesures();
     }
 
-    public void recupNomStation() throws Exception {
+    public void recupNomsStations() throws Exception {
+
         ArrayList<String> resultat = bd.nomsStations();
 
-        for (int i = 0; i < resultat.size(); i++) {
+        for (int i = 0; i < resultat.size(); i++)
             listeStations.addItem(resultat.get(i));
-        }
+
+        listeStations.setSelectedIndex(0);
     }
 
     public void majMesures() throws Exception {
+
         Double[] rs;
-        rs = bd.derniereMesure();
+        rs = bd.derniereMesure(bd.getIdStation(listeStations.getSelectedItem().toString()));
         System.out.println(rs[0]);
 
         affNO2.setText("Oxyde d'Azote : " + rs[4] + " ppm");

@@ -9,46 +9,67 @@ public class LectureBase {
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
-    private PreparedStatement selectMesuresStatement = null;
+    private PreparedStatement selectLastMesureStatement = null, selectCapteursDuneStationStatement = null, selectAllStationsStatement = null, selectStationFromNomStatement = null;
 
     public void connexionBD() throws Exception {
+
         try {
             //Enregistrement de la classe du driver par le driverManager
             //Class.forName("com.mysql.jdbc.Driver");
             //System.out.println("Driver trouvé...");
             //Création d'une connexion sur la base de donnée
             String urlJDBC = "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD;
-            urlJDBC += "?zeroDateTimeBehavior=CONVERT_TO_NULL&serverTimezone=Europe/Paris";
+            urlJDBC += "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
 
             System.out.println("Connexion à " + urlJDBC);
             this.connection = DriverManager.getConnection(urlJDBC, this.loginBD, this.motdepasseBD);
 
             System.out.println("Connexion établie...");
 
-            // Requête de test pour lister les tables existantes dans les BDs MySQL
-            PreparedStatement statement = this.connection.prepareStatement(
-                    "SELECT table_schema, table_name"
-                            + " FROM information_schema.tables"
-                            + " WHERE table_schema NOT LIKE '%_schema' AND table_schema != 'mysql'"
-                            + " ORDER BY table_schema, table_name");
-            ResultSet result = statement.executeQuery();
+            makeStatements();
 
-            System.out.println("Liste des tables:");
-            while (result.next()) {
-                System.out.println("- " + result.getString("table_schema") + "." + result.getString("table_name"));
-            }
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
             throw new Exception("Erreur dans la méthode connexionBD()");
         }
+    }
 
+    public void makeStatements() {
+
+        try {
+            this.selectAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
+            this.selectStationFromNomStatement = this.connection.prepareStatement("SELECT idStation FROM station WHERE station.nomStation = ?");
+
+            // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
+            this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?;");
+            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ?");
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    public int getIdStation(String nomStation) throws Exception {
+
+        try {
+
+            this.selectStationFromNomStatement.setString(1, nomStation);
+            ResultSet stations = this.selectStationFromNomStatement.executeQuery();
+            stations.next();
+
+            return stations.getInt("idStation");
+
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+            throw new Exception("Erreur dans la récupération de la station \"" + nomStation + "\"");
+        }
     }
 
     public ArrayList nomsStations() throws Exception {
+
         try {
             // À compléter
-            this.selectMesuresStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
-            ResultSet rs = selectMesuresStatement.executeQuery();
+            ResultSet rs = selectAllStationsStatement.executeQuery();
             ArrayList<String> noms = new ArrayList();
             while (rs.next()) {
                 noms.add(rs.getString("nomStation"));
@@ -62,18 +83,29 @@ public class LectureBase {
         }
     }
 
-    public Double[] derniereMesure() throws Exception {
+    public Double[] derniereMesure(String nomStation) throws Exception {
+
+        return derniereMesure(getIdStation(nomStation));
+    }
+    public Double[] derniereMesure(int idStation) throws Exception {
+
         try {
             Double[] valeurs = new Double[9];
-            this.selectMesuresStatement = this.connection.prepareStatement("SELECT MAX(dateMesure),valeur FROM mesure, capteur WHERE mesure.idCapteur=capteur.idCapteur AND capteur.idTypeCapteur=? GROUP BY idMesure;");
-            for (int i = 1; i < 9; i++) {
-                selectMesuresStatement.setInt(1, i);
-                ResultSet rs = selectMesuresStatement.executeQuery();
+
+            this.selectCapteursDuneStationStatement.setInt(1, idStation);
+            ResultSet capteurs = this.selectCapteursDuneStationStatement.executeQuery();
+            while (capteurs.next()) {
+
+                int row = capteurs.getRow();
+                selectLastMesureStatement.setInt(1, idStation);
+                selectLastMesureStatement.setInt(3, idStation);
+                selectLastMesureStatement.setInt(2, capteurs.getInt("idTypeCapteur"));
+                selectLastMesureStatement.setInt(4, capteurs.getInt("idTypeCapteur"));
+                ResultSet rs = selectLastMesureStatement.executeQuery();
 
                 while (rs.next()) {
-                    valeurs[i - 1] = rs.getDouble("valeur");
+                    valeurs[row] = rs.getDouble("valeur");
                 }
-
             }
 
             return valeurs;
@@ -83,5 +115,4 @@ public class LectureBase {
             throw new Exception("Erreur dans la récupération des valeurs actuelles");
         }
     }
-
 }
