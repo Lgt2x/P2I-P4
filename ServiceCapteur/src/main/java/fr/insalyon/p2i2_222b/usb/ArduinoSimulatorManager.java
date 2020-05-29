@@ -1,6 +1,6 @@
-package fr.insalyon.p2i2.javaarduino.usb;
+package fr.insalyon.p2i2_222b.usb;
 
-import fr.insalyon.p2i2.javaarduino.util.Console;
+import fr.insalyon.p2i2_222b.util.Console;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

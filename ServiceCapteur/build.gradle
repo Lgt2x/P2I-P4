@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+
+group 'fr.insalyon.p2i2_222b'
+version '0.1.0'
+mainClassName = "fr.insalyon.p2i2_222b.Main"
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation "mysql:mysql-connector-java:5.1.49"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+shadowJar {
+    archiveFileName = "servicecapteur.jar"
+    manifest {
+        attributes "Main-Class": mainClassName
+    }
+}
