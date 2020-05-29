@@ -15,8 +15,8 @@ import java.util.Date;
 public class Main {
 
     public static SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    static Console console = new Console();
-    static DBManager db = new DBManager("jdbc:h2:./test");
+    public static Console console = new Console();
+    static DBManager db = new DBManager("jdbc:h2:./temp/test");
     static int udpListeningPort = 20001;
     static int udpSendingPort = 20002;
     static ArduinoConnector arduino;
@@ -34,7 +34,7 @@ public class Main {
             }
         }));
 
-        console.err("ServiceCapteur v0.1.0");
+        console.log("ServiceCapteur v0.1.0");
 
         try {
             arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort);
@@ -48,23 +48,17 @@ public class Main {
                 console.log("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + data);
             });
 
-            if (true) {
+            if (!db.isDBSetup()) {
                 console.log("Mise en place de la BDD");
-                db.setupDB("../SQL/creationTables.sql");
+                db.setupDB("/sql/creationTables.sql");
             }
 
-            console.err("DÉMARRAGE de la connexion (au simulateur)");
+            console.err("DÉMARRAGE de la connexion au simulateur");
             // Connexion à l'Arduino
             arduino.start();
 
-            console.err("BOUCLE infinie en attente du Clavier");
-
-            // Boucle d'écriture sur l'Arduino (exécution concurrente au Thread qui écoute)
-            boolean exit = false;
-            while (!exit) {
-
-            }
-        } catch (IOException ex) {
+            Thread.currentThread().join();
+        } catch (IOException | InterruptedException ex) {
             // Si un problème a eu lieu...
             console.err(ex);
         }
