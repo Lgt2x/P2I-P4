@@ -1,0 +1,33 @@
+plugins {
+    id "java"
+}
+
+subprojects {
+    group 'fr.insalyon.p2i2_222b'
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+}
+
+task allShadowJars {
+    dependsOn ":Interface:shadowJar"
+    dependsOn ":ServiceCapteur:shadowJar"
+    doLast {
+        task ->
+            copy {
+                from "Interface/build/libs"
+                from "ServiceCapteur/build/libs"
+                into "$buildDir/libs"
+            }
+    }
+}

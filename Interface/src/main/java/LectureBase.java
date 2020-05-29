@@ -37,8 +37,7 @@ public class LectureBase {
             while (result.next()) {
                 System.out.println("- " + result.getString("table_schema") + "." + result.getString("table_name"));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace(System.err);
             throw new Exception("Erreur dans la méthode connexionBD()");
         }
@@ -49,9 +48,9 @@ public class LectureBase {
         try {
             // À compléter
             this.selectMesuresStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
-            ResultSet rs= selectMesuresStatement.executeQuery();
+            ResultSet rs = selectMesuresStatement.executeQuery();
             ArrayList<String> noms = new ArrayList();
-            while (rs.next()){
+            while (rs.next()) {
                 noms.add(rs.getString("nomStation"));
             }
 
@@ -67,12 +66,12 @@ public class LectureBase {
         try {
             Double[] valeurs = new Double[9];
             this.selectMesuresStatement = this.connection.prepareStatement("SELECT MAX(dateMesure),valeur FROM mesure, capteur WHERE mesure.idCapteur=capteur.idCapteur AND capteur.idTypeCapteur=? GROUP BY idMesure;");
-            for(int i=1; i<9; i++) {
-                selectMesuresStatement.setInt(1,i);
+            for (int i = 1; i < 9; i++) {
+                selectMesuresStatement.setInt(1, i);
                 ResultSet rs = selectMesuresStatement.executeQuery();
 
                 while (rs.next()) {
-                    valeurs[i-1]=rs.getDouble("valeur");
+                    valeurs[i - 1] = rs.getDouble("valeur");
                 }
 
             }
