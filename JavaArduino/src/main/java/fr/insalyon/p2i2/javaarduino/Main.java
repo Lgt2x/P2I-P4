@@ -2,12 +2,12 @@ package fr.insalyon.p2i2.javaarduino;
 
 import fr.insalyon.p2i2.javaarduino.usb.ArduinoSimulatorManager;
 import fr.insalyon.p2i2.javaarduino.util.Console;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Main
-{
+public class Main {
 
     public static SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
@@ -25,7 +25,7 @@ public class Main
 
         try {
 
-            ArduinoSimulatorManager arduino = new ArduinoSimulatorManager(udpListeningPort,udpSendingPort) {
+            ArduinoSimulatorManager arduino = new ArduinoSimulatorManager(udpListeningPort, udpSendingPort) {
                 @Override
                 protected void onData(String line) {
 

@@ -1,6 +1,7 @@
 package fr.insalyon.p2i2.javaarduino.usb;
 
 import fr.insalyon.p2i2.javaarduino.util.Console;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -35,120 +36,6 @@ public class ArduinoSimulatorManager {
 
     }
 
-    public final void start() throws IOException {
-
-        this.bufferQueue = new LinkedBlockingQueue<String>();
-
-        this.handlerThread = new Thread(new Runnable() {
-
-            public void run() {
-
-                ArduinoSimulatorManager.this.handlerThreadRunning = true;
-
-                String queueData;
-
-                while (ArduinoSimulatorManager.this.handlerThreadRunning) {
-                    try {
-                        queueData = ArduinoSimulatorManager.this.bufferQueue.take();
-                        ArduinoSimulatorManager.this.onData(queueData);
-                    } catch (InterruptedException ex) {
-                        // Ignore...
-                    }
-                }
-
-                ArduinoSimulatorManager.this.handlerThreadRunning = false;
-            }
-        });
-
-        // Creation d'une tache qui va s'exécuter en parallèle du code séquentiel du main
-        this.readingThread = new Thread(new Runnable() {
-
-            public void run() {
-
-                ArduinoSimulatorManager.this.readingThreadRunning = true;
-
-                byte[] receiveData = new byte[1024];
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-
-                try {
-                    while (ArduinoSimulatorManager.this.readingThreadRunning) {
-                        ArduinoSimulatorManager.this.serverSocket.receive(receivePacket);
-                        InetAddress ipAddress = receivePacket.getAddress();
-                        int port = receivePacket.getPort();
-                        String message = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength(), StandardCharsets.UTF_8);
-                        //System.out.println("RECEIVED from " + ipAddress.getHostAddress() + ":" + port + " >> " + message);
-
-                        try {
-                            ArduinoSimulatorManager.this.bufferQueue.put(message);
-                        } catch (InterruptedException ex) {
-                            // Ignore...
-                        }
-                    }
-
-                } catch (IOException ex) {
-                    if (ArduinoSimulatorManager.this.readingThreadRunning) {
-                        ex.printStackTrace(System.err);
-                    }
-                }
-
-                ArduinoSimulatorManager.this.readingThreadRunning = false;
-            }
-        });
-
-        this.handlerThread.start();
-        this.readingThread.start();
-    }
-
-    public final void stop() throws IOException {
-        
-        this.readingThreadRunning = false;
-        
-        this.serverSocket.close();
-
-        if (this.readingThread != null) {
-            //Ordre d'interruption de la transmission en entrée
-            this.readingThread.interrupt();
-            try {
-                //attente de la fin du thread (au plus 1000 ms)
-                this.readingThread.join(1000);
-            } catch (InterruptedException ex) {
-                // Ignore
-                ex.printStackTrace(System.err);
-            }
-        }
-
-        this.handlerThreadRunning = false;
-
-        if (this.handlerThread != null) {
-            //Ordre d'interruption de la transmission en entrée
-            this.handlerThread.interrupt();
-            try {
-                //attente de la fin du thread (au plus 1000 ms)
-                this.handlerThread.join(1000);
-            } catch (InterruptedException ex) {
-                // Ignore
-                ex.printStackTrace(System.err);
-            }
-        }
-    }
-
-    protected void onData(String line) {
-        // Cette méthode est à surcharger dans une classe qui hérite de cette classe
-
-        // Affichage de la ligne transmise par l'Arduino
-        // System.err.println("Data from Arduino: " + line);
-    }
-
-    public final void write(String line) throws IOException {
-        if (this.udpSendingPort != null) {
-            byte[] data = line.getBytes(StandardCharsets.UTF_8);
-            this.serverSocket.send(new DatagramPacket(data, data.length, this.localhostIpAddress, this.udpSendingPort));
-        }
-        else {
-            throw new IOException("No Port defined to send UDP Datagram");
-        }
-    }
-
     public static void test() {
 
         // Objet matérialisant la console d'exécution (Affichage Écran / Lecture Clavier)
@@ -160,10 +47,10 @@ public class ArduinoSimulatorManager {
         // Spécification des Ports UDP
         Integer udpListeningPort = 20001;
         Integer udpSendingPort = 20002;
-        
+
         try {
-        
-            ArduinoSimulatorManager arduino = new ArduinoSimulatorManager(udpListeningPort,udpSendingPort) {
+
+            ArduinoSimulatorManager arduino = new ArduinoSimulatorManager(udpListeningPort, udpSendingPort) {
                 @Override
                 protected void onData(String line) {
 
@@ -217,5 +104,112 @@ public class ArduinoSimulatorManager {
             console.log(ex);
         }
 
+    }
+
+    public final void start() throws IOException {
+
+        this.bufferQueue = new LinkedBlockingQueue<>();
+
+        this.handlerThread = new Thread(() -> {
+
+            ArduinoSimulatorManager.this.handlerThreadRunning = true;
+
+            String queueData;
+
+            while (ArduinoSimulatorManager.this.handlerThreadRunning) {
+                try {
+                    queueData = ArduinoSimulatorManager.this.bufferQueue.take();
+                    ArduinoSimulatorManager.this.onData(queueData);
+                } catch (InterruptedException ex) {
+                    // Ignore...
+                }
+            }
+
+            ArduinoSimulatorManager.this.handlerThreadRunning = false;
+        });
+
+        // Creation d'une tache qui va s'exécuter en parallèle du code séquentiel du main
+        this.readingThread = new Thread(() -> {
+
+            ArduinoSimulatorManager.this.readingThreadRunning = true;
+
+            byte[] receiveData = new byte[1024];
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+
+            try {
+                while (ArduinoSimulatorManager.this.readingThreadRunning) {
+                    ArduinoSimulatorManager.this.serverSocket.receive(receivePacket);
+                    InetAddress ipAddress = receivePacket.getAddress();
+                    int port = receivePacket.getPort();
+                    String message = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength(), StandardCharsets.UTF_8);
+                    //System.out.println("RECEIVED from " + ipAddress.getHostAddress() + ":" + port + " >> " + message);
+
+                    try {
+                        ArduinoSimulatorManager.this.bufferQueue.put(message);
+                    } catch (InterruptedException ex) {
+                        // Ignore...
+                    }
+                }
+
+            } catch (IOException ex) {
+                if (ArduinoSimulatorManager.this.readingThreadRunning) {
+                    ex.printStackTrace(System.err);
+                }
+            }
+
+            ArduinoSimulatorManager.this.readingThreadRunning = false;
+        });
+
+        this.handlerThread.start();
+        this.readingThread.start();
+    }
+
+    public final void stop() throws IOException {
+
+        this.readingThreadRunning = false;
+
+        this.serverSocket.close();
+
+        if (this.readingThread != null) {
+            //Ordre d'interruption de la transmission en entrée
+            this.readingThread.interrupt();
+            try {
+                //attente de la fin du thread (au plus 1000 ms)
+                this.readingThread.join(1000);
+            } catch (InterruptedException ex) {
+                // Ignore
+                ex.printStackTrace(System.err);
+            }
+        }
+
+        this.handlerThreadRunning = false;
+
+        if (this.handlerThread != null) {
+            //Ordre d'interruption de la transmission en entrée
+            this.handlerThread.interrupt();
+            try {
+                //attente de la fin du thread (au plus 1000 ms)
+                this.handlerThread.join(1000);
+            } catch (InterruptedException ex) {
+                // Ignore
+                ex.printStackTrace(System.err);
+            }
+        }
+    }
+
+    protected void onData(String line) {
+        // Cette méthode est à surcharger dans une classe qui hérite de cette classe
+
+        // Affichage de la ligne transmise par l'Arduino
+        // System.err.println("Data from Arduino: " + line);
+    }
+
+    public final void write(String line) throws IOException {
+        if (this.udpSendingPort != null) {
+            byte[] data = line.getBytes(StandardCharsets.UTF_8);
+            this.serverSocket.send(new DatagramPacket(data, data.length, this.localhostIpAddress, this.udpSendingPort));
+        } else {
+            throw new IOException("No Port defined to send UDP Datagram");
+        }
     }
 }
