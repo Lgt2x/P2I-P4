@@ -1,7 +1,5 @@
 package fr.insalyon.p2i2_222b;
 
-import fr.insalyon.p2i2_222b.util.Console;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -10,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class PacketTracerArduino implements ArduinoConnector {
+public class PacketTracerArduino extends ArduinoConnector {
 
     protected final Integer udpListeningPort;
     protected final Integer udpSendingPort;
@@ -33,80 +31,9 @@ public class PacketTracerArduino implements ArduinoConnector {
 
         this.localhostIpAddress = InetAddress.getByName("127.0.0.1"); // localhost
         this.serverSocket = new DatagramSocket(udpListeningPort);
-
     }
 
-    public static void test() {
-
-        // Objet matérialisant la console d'exécution (Affichage Écran / Lecture Clavier)
-        final Console console = new Console();
-
-        // Affichage sur la console
-        console.log("DÉBUT du programme de Test de ArduinoSimulatorManager");
-
-        // Spécification des Ports UDP
-        Integer udpListeningPort = 20001;
-        Integer udpSendingPort = 20002;
-
-        try {
-
-            PacketTracerArduino arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort) {
-                @Override
-                protected void onData(String line) {
-
-                    // Cette méthode est appelée AUTOMATIQUEMENT lorsque l'Arduino envoie des données
-                    // Affichage sur la Console de la ligne transmise par l'Arduino
-                    console.println("ARDUINO >> " + line);
-
-                    // À vous de jouer ;-)
-                    // Par exemple:
-                    //   String[] data = line.split(";");
-                    //   int sensorid = Integer.parseInt(data[0]);
-                    //   double value = Double.parseDouble(data[1]);
-                    //   ...
-                }
-            };
-
-            console.log("DÉMARRAGE de la connexion (au simulateur)");
-            // Connexion à l'Arduino
-            arduino.start();
-
-            console.log("BOUCLE infinie en attente du Clavier");
-            // Boucle d'écriture sur l'Arduino (exécution concurrente au Thread qui écoute)
-            boolean exit = false;
-
-            while (!exit) {
-
-                // Lecture Clavier de la ligne saisie par l'Utilisateur
-                String line = console.readLine("Envoyer une ligne (ou 'stop') > ");
-
-                if (line.length() != 0) {
-
-                    // Affichage sur l'écran
-                    console.log("CLAVIER >> " + line);
-
-                    // Test de sortie de boucle
-                    exit = line.equalsIgnoreCase("stop");
-
-                    if (!exit) {
-                        // Envoi sur l'Arduino du texte saisi au Clavier
-                        arduino.write(line);
-                    }
-                }
-            }
-
-            console.log("ARRÊT de la connexion");
-            // Fin de la connexion à l'Arduino
-            arduino.close();
-
-        } catch (IOException ex) {
-            // Si un problème a eu lieu...
-            console.log(ex);
-        }
-
-    }
-
-    public final void start() throws IOException {
+    public final void start() {
 
         this.bufferQueue = new LinkedBlockingQueue<>();
 
@@ -119,7 +46,7 @@ public class PacketTracerArduino implements ArduinoConnector {
             while (PacketTracerArduino.this.handlerThreadRunning) {
                 try {
                     queueData = PacketTracerArduino.this.bufferQueue.take();
-                    PacketTracerArduino.this.onData(queueData);
+                    PacketTracerArduino.this.dataHandler.accept(queueData);
                 } catch (InterruptedException ex) {
                     // Ignore...
                 }
@@ -165,7 +92,7 @@ public class PacketTracerArduino implements ArduinoConnector {
     }
 
     @Override
-    public final void close() throws IOException {
+    public final void close() {
 
         this.readingThreadRunning = false;
 
@@ -196,13 +123,6 @@ public class PacketTracerArduino implements ArduinoConnector {
                 ex.printStackTrace(System.err);
             }
         }
-    }
-
-    protected void onData(String line) {
-        // Cette méthode est à surcharger dans une classe qui hérite de cette classe
-
-        // Affichage de la ligne transmise par l'Arduino
-        // System.err.println("Data from Arduino: " + line);
     }
 
     public final void write(String line) throws IOException {

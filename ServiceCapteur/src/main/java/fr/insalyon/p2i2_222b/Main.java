@@ -26,23 +26,10 @@ public class Main {
         Integer udpSendingPort = 20002;
 
         try {
-            ArduinoConnector arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort) {
-                @Override
-                protected void onData(String line) {
-
-                    // Cette méthode est appelée AUTOMATIQUEMENT lorsque l'Arduino envoie des données
-                    // Affichage sur la Console de la ligne transmise par l'Arduino
-                    console.println("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + line);
-                    //console.println("ARDUINO >> " + line);
-
-                    // À vous de jouer ;-)
-                    // Par exemple:
-                    //   String[] data = line.split(";");
-                    //   int sensorid = Integer.parseInt(data[0]);
-                    //   double value = Double.parseDouble(data[1]);
-                    //   ...
-                }
-            };
+            ArduinoConnector arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort);
+            arduino.setDataHandler((data) -> {
+                console.println("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + data);
+            });
 
             console.log("DÉMARRAGE de la connexion (au simulateur)");
             // Connexion à l'Arduino
