@@ -1,4 +1,4 @@
-package fr.insalyon.p2i2_222b;
+package fr.insalyon.p2i2_222b.arduino;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -10,7 +10,7 @@ public abstract class ArduinoConnector implements Closeable {
 
     public abstract void start() throws IOException;
 
-    public abstract void write(String data) throws IOException;
+    //public abstract void write(String data) throws IOException;
 
     public void setDataHandler(Consumer<String> handler) {
         this.dataHandler = handler;

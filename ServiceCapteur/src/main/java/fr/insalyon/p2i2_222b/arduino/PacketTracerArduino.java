@@ -1,4 +1,4 @@
-package fr.insalyon.p2i2_222b;
+package fr.insalyon.p2i2_222b.arduino;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -10,8 +10,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class PacketTracerArduino extends ArduinoConnector {
 
-    protected final Integer udpListeningPort;
-    protected final Integer udpSendingPort;
+    protected final int udpListeningPort;
+    protected final int udpSendingPort;
 
     protected Thread readingThread;
     protected Thread handlerThread;
@@ -23,7 +23,7 @@ public class PacketTracerArduino extends ArduinoConnector {
 
     protected InetAddress localhostIpAddress;
 
-    public PacketTracerArduino(Integer udpListeningPort, Integer udpSendingPort) throws IOException {
+    public PacketTracerArduino(int udpListeningPort, int udpSendingPort) throws IOException {
         this.udpListeningPort = udpListeningPort;
         this.udpSendingPort = udpSendingPort;
 
@@ -125,12 +125,11 @@ public class PacketTracerArduino extends ArduinoConnector {
         }
     }
 
-    public final void write(String line) throws IOException {
-        if (this.udpSendingPort != null) {
-            byte[] data = line.getBytes(StandardCharsets.UTF_8);
-            this.serverSocket.send(new DatagramPacket(data, data.length, this.localhostIpAddress, this.udpSendingPort));
-        } else {
-            throw new IOException("No Port defined to send UDP Datagram");
-        }
+    /*
+    public void write(String line) throws IOException {
+        byte[] data = line.getBytes(StandardCharsets.UTF_8);
+        this.serverSocket.send(new DatagramPacket(data, data.length, this.localhostIpAddress, this.udpSendingPort));
     }
+
+     */
 }
