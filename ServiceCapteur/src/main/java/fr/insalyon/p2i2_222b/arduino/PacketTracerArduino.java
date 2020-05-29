@@ -39,52 +39,52 @@ public class PacketTracerArduino extends ArduinoConnector {
 
         this.handlerThread = new Thread(() -> {
 
-            PacketTracerArduino.this.handlerThreadRunning = true;
+            this.handlerThreadRunning = true;
 
             String queueData;
 
-            while (PacketTracerArduino.this.handlerThreadRunning) {
+            while (this.handlerThreadRunning) {
                 try {
-                    queueData = PacketTracerArduino.this.bufferQueue.take();
-                    PacketTracerArduino.this.dataHandler.accept(queueData);
+                    queueData = this.bufferQueue.take();
+                    this.dataHandler.accept(queueData);
                 } catch (InterruptedException ex) {
                     // Ignore...
                 }
             }
 
-            PacketTracerArduino.this.handlerThreadRunning = false;
+            this.handlerThreadRunning = false;
         });
 
         // Creation d'une tache qui va s'exécuter en parallèle du code séquentiel du main
         this.readingThread = new Thread(() -> {
 
-            PacketTracerArduino.this.readingThreadRunning = true;
+            this.readingThreadRunning = true;
 
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
             try {
-                while (PacketTracerArduino.this.readingThreadRunning) {
-                    PacketTracerArduino.this.serverSocket.receive(receivePacket);
+                while (this.readingThreadRunning) {
+                    this.serverSocket.receive(receivePacket);
                     InetAddress ipAddress = receivePacket.getAddress();
                     int port = receivePacket.getPort();
                     String message = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength(), StandardCharsets.UTF_8);
                     //System.out.println("RECEIVED from " + ipAddress.getHostAddress() + ":" + port + " >> " + message);
 
                     try {
-                        PacketTracerArduino.this.bufferQueue.put(message);
+                        this.bufferQueue.put(message);
                     } catch (InterruptedException ex) {
                         // Ignore...
                     }
                 }
 
             } catch (IOException ex) {
-                if (PacketTracerArduino.this.readingThreadRunning) {
+                if (this.readingThreadRunning) {
                     ex.printStackTrace(System.err);
                 }
             }
 
-            PacketTracerArduino.this.readingThreadRunning = false;
+            this.readingThreadRunning = false;
         });
 
         this.handlerThread.start();

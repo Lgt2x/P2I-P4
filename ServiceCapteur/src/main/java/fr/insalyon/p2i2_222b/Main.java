@@ -7,6 +7,7 @@ import fr.insalyon.p2i2_222b.util.Console;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -38,8 +39,9 @@ public class Main {
 
         try {
             arduino = new PacketTracerArduino(udpListeningPort, udpSendingPort);
-            arduino.setDataHandler((data) -> {
-                console.log("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + data);
+            arduino.setDataHandler((line) -> {
+                String[] data = line.split(":");
+                console.log("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + Arrays.toString(data));
             });
 
             if (!db.isDBSetup()) {
