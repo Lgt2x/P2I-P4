@@ -11,3 +11,5 @@ gradlew :ServiceCapteur:run
 gradlew :Interface:run
 ```
 
+Depuis IntelliJ, il y a déjà des configurations de lancement
+dans le dossier `.run` qui devraient déjà être importées.

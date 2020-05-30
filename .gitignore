@@ -25,5 +25,5 @@ hs_err_pid*
 .idea/
 .gradle/
 ServiceCapteur/build/
-ServiceCapteur/temp/
 Interface/build/
+db/

@@ -1,4 +1,4 @@
-package fr.insalyon.p2i2_222b.arduino;
+package fr.insalyon.p2i2_222b.data;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class PacketTracerArduino extends ArduinoConnector {
+public class StationPacketTracer extends DataSource {
 
     protected final int udpListeningPort;
     protected final int udpSendingPort;
@@ -23,7 +23,7 @@ public class PacketTracerArduino extends ArduinoConnector {
 
     protected InetAddress localhostIpAddress;
 
-    public PacketTracerArduino(int udpListeningPort, int udpSendingPort) throws IOException {
+    public StationPacketTracer(int udpListeningPort, int udpSendingPort) throws IOException {
         this.udpListeningPort = udpListeningPort;
         this.udpSendingPort = udpSendingPort;
 
@@ -46,7 +46,7 @@ public class PacketTracerArduino extends ArduinoConnector {
             while (this.handlerThreadRunning) {
                 try {
                     queueData = this.bufferQueue.take();
-                    this.dataHandler.accept(queueData);
+                    this.dataHandler.accept(queueData.split(":"));
                 } catch (InterruptedException ex) {
                     // Ignore...
                 }
