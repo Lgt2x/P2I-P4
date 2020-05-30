@@ -11,6 +11,8 @@ dependencies {
     implementation "mysql:mysql-connector-java:5.1.49"
     // Fourni une base de donnée en mémoire pour les tests (pas besoin de serveur)
     implementation "com.h2database:h2:1.4.200"
+    // Pour les charts
+    implementation "org.knowm.xchart:xchart:3.6.3"
 }
 
 shadowJar {
