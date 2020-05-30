@@ -1,3 +1,6 @@
+import org.knowm.xchart.QuickChart;
+import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.XYChart;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -5,6 +8,8 @@ import java.util.ArrayList;
 public class FenetreVisualisation extends JFrame {
 
     private JComboBox listeStations;
+    private JComboBox selectStation;
+    private JComboBox selectGrandeur;
     private JLabel affTemp;
     private JLabel affHum;
     private JLabel affParticules;
@@ -15,6 +20,7 @@ public class FenetreVisualisation extends JFrame {
     private JLabel affLum;
     private JLabel affPression;
     private LectureBase bd;
+
 
     public FenetreVisualisation() throws Exception {
 
@@ -42,6 +48,10 @@ public class FenetreVisualisation extends JFrame {
         JLabel titre = new JLabel("Données actuelles de la station");
         titre.setFont(police);
         titre.setBounds(475, 5, 1000, 70);
+
+        JLabel titreGraph = new JLabel("Visualiser les enregistrements sur un graphique");
+        titreGraph.setFont(police);
+        titreGraph.setBounds(475,300,1000,70);
 
         Font policeValeurs = new Font("Arial", Font.PLAIN, 17);
 
@@ -93,6 +103,32 @@ public class FenetreVisualisation extends JFrame {
             }
         });
 
+        JButton generer = new JButton ("Générer le graphique");
+        generer.setBounds(650,600,200,50);
+        generer.addActionListener(e ->{
+            try{
+                //à compléter
+            }catch(Exception exception){
+                exception.printStackTrace();
+            }
+        });
+
+        selectGrandeur = new JComboBox();
+        selectGrandeur.setBounds(800,400,150,50);
+
+        selectStation = new JComboBox();
+        selectStation.setBounds(550,400,150,50);
+        selectStation.addActionListener(e -> {
+            try{
+                recupGrandeurStations();
+            }catch(Exception exception){
+                exception.printStackTrace();
+            }
+        });
+
+        affInfoDirect.add(selectGrandeur);
+        affInfoDirect.add(generer);
+        affInfoDirect.add(selectStation);
         affInfoDirect.add(titre);
         affInfoDirect.add(refresh);
         affInfoDirect.add(affO2);
@@ -105,6 +141,7 @@ public class FenetreVisualisation extends JFrame {
         affInfoDirect.add(affPression);
         affInfoDirect.add(affTemp);
         affInfoDirect.add(listeStations);
+        affInfoDirect.add(titreGraph);
 
         this.add(affInfoDirect);
         this.setLayout(null);
@@ -113,17 +150,40 @@ public class FenetreVisualisation extends JFrame {
         bd = new LectureBase();
         bd.connexionBD();
         recupNomsStations();
+        recupGrandeurStations();
         majMesures();
+
+        /* ESSAI XCHART
+        double[] xData = new double[] { 0.0, 1.0, 2.0 };
+        double[] yData = new double[] { 2.0, 1.0, 0.0 };
+
+        // Create Chart
+        XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
+
+        // Show it
+        new SwingWrapper(chart).displayChart();
+
+         */
     }
 
     public void recupNomsStations() throws Exception {
 
         ArrayList<String> resultat = bd.nomsStations();
 
-        for (int i = 0; i < resultat.size(); i++)
+        for (int i = 0; i < resultat.size(); i++) {
             listeStations.addItem(resultat.get(i));
+            selectStation.addItem(resultat.get(i));
+        }
 
         listeStations.setSelectedIndex(0);
+    }
+
+    public void recupGrandeurStations() throws Exception{
+        selectGrandeur.removeAllItems();
+        ArrayList<String> rs = bd.grandeurStations(selectStation.getSelectedItem().toString());
+        for (int j=0; j<rs.size(); j++){
+            selectGrandeur.addItem(rs.get(j));
+        }
     }
 
     public void majMesures() throws Exception {

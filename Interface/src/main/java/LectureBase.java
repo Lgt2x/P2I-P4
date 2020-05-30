@@ -9,7 +9,7 @@ public class LectureBase {
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
-    private PreparedStatement selectLastMesureStatement = null, selectCapteursDuneStationStatement = null, selectAllStationsStatement = null, selectStationFromNomStatement = null;
+    private PreparedStatement selectLastMesureStatement = null, selectCapteursDuneStationStatement = null, selectAllStationsStatement = null, selectStationFromNomStatement = null, selectGrandeursStationStatement = null;
 
     public void connexionBD() throws Exception {
 
@@ -39,6 +39,7 @@ public class LectureBase {
         try {
             this.selectAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
             this.selectStationFromNomStatement = this.connection.prepareStatement("SELECT idStation FROM station WHERE station.nomStation = ?");
+            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType FROM typecapteur, capteur, station WHERE typecapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=?");
 
             // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
             this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?;");
@@ -83,10 +84,29 @@ public class LectureBase {
         }
     }
 
+    public ArrayList grandeurStations(String nomStation) throws Exception {
+        try {
+            this.selectGrandeursStationStatement.setInt(1, getIdStation(nomStation));
+            ResultSet rs = selectGrandeursStationStatement.executeQuery();
+            ArrayList<String> grandeurs = new ArrayList();
+            while (rs.next()) {
+                grandeurs.add(rs.getString("libelleType"));
+            }
+
+            return grandeurs;
+
+        } catch (Exception exception) {
+            exception.printStackTrace(System.err);
+            throw new Exception("Erreur dans la récupération des grandeurs de la station");
+        }
+    }
+
+
     public Double[] derniereMesure(String nomStation) throws Exception {
 
         return derniereMesure(getIdStation(nomStation));
     }
+
     public Double[] derniereMesure(int idStation) throws Exception {
 
         try {
@@ -104,7 +124,7 @@ public class LectureBase {
                 ResultSet rs = selectLastMesureStatement.executeQuery();
 
                 while (rs.next()) {
-                    valeurs[row-1] = rs.getDouble("valeur");
+                    valeurs[row - 1] = rs.getDouble("valeur");
                 }
             }
 
