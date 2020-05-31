@@ -36,20 +36,18 @@ public class Main {
         console.log("ServiceCapteur v0.1.0");
 
         try {
+            // TODO create a station pool
             //arduino = new StationPacketTracer(20001, 20002);
             arduino = new StationFaker(1500);
             arduino.setDataHandler((data) -> {
-                console.log("ARDUINO @ " + DATETIME_FORMAT.format(new Date()) + " >> " + Arrays.toString(data));
+                console.log(DATETIME_FORMAT.format(new Date()) + " >> " + Arrays.toString(data));
+                db.saveMeasure(Integer.parseInt(data[1]), Double.parseDouble(data[2]));
             });
 
-            if (!db.isDBSetup()) {
-                console.log("Mise en place de la BDD");
-                db.setupDB("/sql/creationTables.sql", "/sql/insertionData.sql");
-            }
-
-            console.log("DÉMARRAGE de la connexion au simulateur");
+            console.log("Démarrage de la connexion au réseau de capteurs.");
             arduino.start();
 
+            // Fait attendre ce thread jusqu'à un ctrl-c
             Thread.currentThread().join();
         } catch (IOException | InterruptedException ex) {
             // Ya une couille dans le pâté
