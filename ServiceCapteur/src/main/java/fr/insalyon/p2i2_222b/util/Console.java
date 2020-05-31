@@ -15,8 +15,6 @@ public class Console {
         this.in = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    // TODO make console thread-safe
-
     public String readLine(String prompt) throws IOException {
         out.print(prompt);
         out.flush();

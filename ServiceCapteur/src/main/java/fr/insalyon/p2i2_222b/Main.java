@@ -36,9 +36,8 @@ public class Main {
         console.log("ServiceCapteur v0.1.0");
 
         try {
-            // TODO create a station pool
             //arduino = new StationPacketTracer(20001, 20002);
-            arduino = new StationFaker(1500);
+            arduino = new StationFaker(500);
             arduino.setDataHandler((data) -> {
                 console.log(DATETIME_FORMAT.format(new Date()) + " >> " + Arrays.toString(data));
                 db.saveMeasure(Integer.parseInt(data[1]), Double.parseDouble(data[2]));

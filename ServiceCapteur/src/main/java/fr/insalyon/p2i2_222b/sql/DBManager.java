@@ -54,18 +54,11 @@ public class DBManager {
         }
     }
 
-    // TODO make dbmanager thread-safe
-
     public boolean isDBSetup() {
         try (Statement st = conn.createStatement()) {
-            ResultSet rs = st.executeQuery("SELECT COUNT(*)\n" +
-                                                   "   FROM INFORMATION_SCHEMA.TABLES\n" +
-                                                   "   WHERE TABLE_SCHEMA = 'P2I2P4'\n" +
-                                                   "   AND TABLE_NAME = 'mesure'");
+            ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'P2I2P4' AND TABLE_NAME = 'MESURE'");
             rs.next();
-            int value = rs.getInt(1);
-            Main.console.log("" + value);
-            return value == 1;
+            return rs.getInt(1) == 1;
         } catch (SQLException e) {
             Main.console.err(e);
             return false;
