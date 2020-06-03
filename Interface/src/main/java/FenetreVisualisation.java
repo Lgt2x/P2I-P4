@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
+@Deprecated
 public class FenetreVisualisation extends JFrame {
 
     private JComboBox listeStations;
@@ -186,10 +187,10 @@ public class FenetreVisualisation extends JFrame {
         }
     }
 
+    @Deprecated
     public void majMesures() throws Exception {
 
-        Double[] rs;
-        rs = bd.derniereMesure(bd.getIdStation(listeStations.getSelectedItem().toString()));
+        Double[] rs = bd.derniereMesure(bd.getIdStation(listeStations.getSelectedItem().toString())).toArray(Double[]::new);
 
         affNO2.setText("Oxyde d'Azote : " + rs[4] + " ppm");
         affCO2.setText("CO2 : " + rs[3] + " ppm");
