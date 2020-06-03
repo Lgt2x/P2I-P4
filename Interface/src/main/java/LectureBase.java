@@ -213,5 +213,4 @@ public class LectureBase {
 
         return "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
     }
-
 }
