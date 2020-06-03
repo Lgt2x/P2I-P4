@@ -18,4 +18,5 @@ shadowJar {
     manifest {
         attributes "Main-Class": mainClassName
     }
+    mergeServiceFiles()
 }

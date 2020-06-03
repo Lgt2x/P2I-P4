@@ -22,7 +22,7 @@ dependencies {
     implementation "com.h2database:h2:1.4.200"
     // Pour les charts
     implementation "org.knowm.xchart:xchart:3.6.3"
-    compile 'com.intellij:forms_rt:7.0.3'
+    implementation "com.intellij:forms_rt:7.0.3"
 }
 
 shadowJar {
@@ -30,4 +30,5 @@ shadowJar {
     manifest {
         attributes "Main-Class": mainClassName
     }
+    mergeServiceFiles()
 }
