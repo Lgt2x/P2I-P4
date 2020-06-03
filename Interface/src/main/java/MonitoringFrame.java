@@ -4,6 +4,7 @@ import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -39,7 +40,7 @@ public class MonitoringFrame extends JFrame {
         super("Monitoring de stations");
 
         setResizable(false);
-        setSize(800, 500);
+        setSize(800, 600);
         setContentPane(mainPanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
@@ -76,6 +77,8 @@ public class MonitoringFrame extends JFrame {
 
         recupNomsStations();
         majMesures();
+
+        splitPane.setDividerLocation(-1);
     }
 
     public void recupNomsStations() throws Exception {
@@ -103,7 +106,8 @@ public class MonitoringFrame extends JFrame {
             throw new Exception("Erreur dans les requêtes, nombre de valeurs et nombre de grandeurs différents");
         }
 
-        TableModel tableModel = new DefaultTableModel(values.size(), 3);
+        TableModel tableModel = new DefaultTableModel(new String[] {"Type", "Valeur", "Unité"}, values.size());
+
         for (int i = 0; i < values.size(); ++i) {
 
             // "temperature|°C" => ["temperature", "°C"]
