@@ -18,6 +18,7 @@ public class LectureBase {
             //Class.forName("com.mysql.jdbc.Driver");
             //System.out.println("Driver trouvé...");
             //Création d'une connexion sur la base de donnée
+
             String urlJDBC = "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD;
             urlJDBC += "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
 
