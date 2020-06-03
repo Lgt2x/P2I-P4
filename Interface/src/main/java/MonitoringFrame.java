@@ -1,37 +1,45 @@
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
+import org.knowm.xchart.QuickChart;
+import org.knowm.xchart.XChartPanel;
+import org.knowm.xchart.XYChart;
+import org.knowm.xchart.internal.chartpart.Chart;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public class MonitoringFrame extends JFrame {
 
     private JPanel mainPanel;
-    private JPanel realtimeAndRefreshPanel;
     private JCheckBox realtimeCheckBox;
     private JButton refreshButton;
     private JComboBox choixStation;
     private JTable tableValeursStation;
-    private JPanel panelGraph;
-    private JSplitPane splitPane;
+
+    // Automatically-generated component references, used for clarity in GUI Designer component tree
+    private JPanel realtimeAndRefreshPanel;
     private JPanel rightPanel;
     private JPanel leftPanel;
     private JPanel stationDataPanel;
     private JPanel graphSettingsPanel;
-    private JComboBox xAxisChoice;
-    private JComboBox yAxisChoice;
     private JPanel xAxisPanel;
     private JPanel yAxisPanel;
+
+    // Chart related
+    private JPanel panelGraph;
+    private Chart chart;
+    private XChartPanel<XYChart> chartPanel;
+    private JComboBox xAxisChoice;
+    private JComboBox yAxisChoice;
+
+
+    private JSplitPane splitPane;
     private LectureBase bd;
     private Timer refreshTimer = new Timer(500, null);
 
@@ -54,17 +62,18 @@ public class MonitoringFrame extends JFrame {
             throw e;
         }
 
-        ActionListener dataUpdate = e -> {
+        ActionListener dataUpdater = e -> {
             try {
                 majMesures();
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
         };
+        ActionListener chartUpdater = e -> updateChart();
 
-        choixStation.addActionListener(dataUpdate);
-        refreshButton.addActionListener(dataUpdate);
-        refreshTimer.addActionListener(dataUpdate);
+        choixStation.addActionListener(dataUpdater);
+        refreshButton.addActionListener(dataUpdater);
+        refreshTimer.addActionListener(dataUpdater);
 
         realtimeCheckBox.addActionListener(e -> {
 
@@ -74,9 +83,12 @@ public class MonitoringFrame extends JFrame {
                 refreshTimer.start();
             else refreshTimer.stop();
         });
+        xAxisChoice.addActionListener(chartUpdater);
+        yAxisChoice.addActionListener(chartUpdater);
 
         recupNomsStations();
         majMesures();
+        buildChart(true);
 
         splitPane.setDividerLocation(-1);
     }
@@ -109,6 +121,13 @@ public class MonitoringFrame extends JFrame {
 
         TableModel tableModel = new DefaultTableModel(new String[] {"Type", "Valeur", "Unité"}, values.size());
 
+        Object previousChoiceXAxis = xAxisChoice.getSelectedItem();
+        Object previousChoiceYAxis = yAxisChoice.getSelectedItem();
+        xAxisChoice.removeAllItems();
+        xAxisChoice.addItem("Temps");
+        yAxisChoice.removeAllItems();
+        yAxisChoice.addItem("Temps");
+
         for (int i = 0; i < values.size(); ++i) {
 
             // "temperature|°C" => ["temperature", "°C"]
@@ -116,7 +135,18 @@ public class MonitoringFrame extends JFrame {
             tableModel.setValueAt(strSplit[0], i, 0);
             tableModel.setValueAt(values.get(i), i, 1);
             tableModel.setValueAt(strSplit[1], i, 2);
+
+            xAxisChoice.addItem(strSplit[0]);
+            yAxisChoice.addItem(strSplit[0]);
         }
+
+        xAxisChoice.setSelectedItem(previousChoiceXAxis);
+        if (xAxisChoice.getSelectedItem() == null)
+            xAxisChoice.setSelectedIndex(0);
+
+        yAxisChoice.setSelectedItem(previousChoiceYAxis);
+        if (yAxisChoice.getSelectedItem() == null)
+            yAxisChoice.setSelectedIndex(0);
 
         tableValeursStation.setModel(tableModel);
 
@@ -124,5 +154,44 @@ public class MonitoringFrame extends JFrame {
         int location = splitPane.getDividerLocation();
         if (location < tableValeursStation.getWidth() || location < choixStation.getWidth())
             splitPane.setDividerLocation(-1);
+    }
+
+    public void buildChart(boolean resetChart) {
+
+        if (resetChart)
+            chart = null;
+
+        if (chart == null)
+            chart = QuickChart.getChart("Graphique", "axe-x", "axe-y", "station", new double[] {0, 0}, new double[] {0, 0});
+
+        if (chartPanel != null)
+            panelGraph.remove(chartPanel);
+
+        chartPanel = new XChartPanel(chart);
+        panelGraph.add(chartPanel);
+
+        panelGraph.updateUI();
+    }
+
+    public void updateChart() {
+
+        String station = choixStation.getSelectedItem() != null ? choixStation.getSelectedItem().toString() : null;
+        String selectedXType = xAxisChoice.getSelectedItem() != null ? xAxisChoice.getSelectedItem().toString() : null;
+        String selectedYType = yAxisChoice.getSelectedItem() != null ? yAxisChoice.getSelectedItem().toString() : null;
+
+        if (station == null || selectedXType == null || selectedYType == null || selectedXType.equalsIgnoreCase(selectedYType))
+            return;
+
+        // {xAxisValues, yAxisValues}
+        double[][] dataSet = null;
+        if (xAxisChoice.getSelectedIndex() == 0 || yAxisChoice.getSelectedIndex() == 0)
+            dataSet = bd.getTimestampedDataset(station, xAxisChoice.getSelectedIndex() == 0 ? selectedYType : selectedXType);
+        else
+            dataSet = bd.getBiQuantityDataset(station, selectedXType, selectedYType);
+
+        if (dataSet != null && dataSet[0] != null && dataSet[1] != null && dataSet[0].length == dataSet[1].length && dataSet[0].length != 0) {
+            chart = QuickChart.getChart("Graphique", xAxisChoice.getSelectedItem().toString(), yAxisChoice.getSelectedItem().toString(), choixStation.getSelectedItem().toString(), dataSet[0], dataSet[1]);
+            buildChart(false);
+        }
     }
 }
