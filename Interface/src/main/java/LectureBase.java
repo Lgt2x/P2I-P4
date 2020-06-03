@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LectureBase {
 
@@ -9,7 +11,12 @@ public class LectureBase {
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
-    private PreparedStatement selectLastMesureStatement = null, selectCapteursDuneStationStatement = null, selectAllStationsStatement = null, selectStationFromNomStatement = null, selectGrandeursStationStatement = null;
+    private PreparedStatement   selectLastMesureStatement = null,
+                                selectCapteursDuneStationStatement = null,
+                                selectAllStationsStatement = null,
+                                selectStationFromNomStatement = null,
+                                selectGrandeursStationStatement = null,
+                                selectAllValuesFromStationOfType = null;
 
     public void connexionBD() throws Exception {
 
@@ -43,7 +50,9 @@ public class LectureBase {
 
             // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
             this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ? order by capteur.idTypeCapteur;");
-            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur");
+
+            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur;");
+            this.selectAllValuesFromStationOfType = this.connection.prepareStatement("select dateMesure, valeur from mesure, station, capteur, typecapteur where station.nomStation = ? and typecapteur.libelleType = ? and capteur.idTypeCapteur = typecapteur.idTypeCapteur and station.idStation = capteur.idStation and mesure.idCapteur = capteur.idCapteur order by dateMesure;");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -66,7 +75,7 @@ public class LectureBase {
         }
     }
 
-    public ArrayList nomsStations() throws Exception {
+    public ArrayList<String> nomsStations() throws Exception {
 
         try {
             // À compléter
@@ -84,7 +93,7 @@ public class LectureBase {
         }
     }
 
-    public ArrayList grandeurStations(String nomStation) throws Exception {
+    public ArrayList<String> grandeurStations(String nomStation) throws Exception {
         try {
             this.selectGrandeursStationStatement.setInt(1, getIdStation(nomStation));
             ResultSet rs = selectGrandeursStationStatement.executeQuery();
@@ -101,6 +110,24 @@ public class LectureBase {
         }
     }
 
+    public Map<Long, Double> getValuesFromStationOfType(String nomStation, String type) {
+
+        Map<Long, Double> values = new HashMap<>();
+        try {
+            this.selectAllValuesFromStationOfType.setString(1, nomStation);
+            this.selectAllValuesFromStationOfType.setString(2, type);
+
+            ResultSet results = this.selectAllValuesFromStationOfType.executeQuery();
+
+            while (results.next())
+                values.put(results.getTimestamp("dateMesure").getTime(), results.getDouble("valeur"));
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return values;
+    }
 
     public ArrayList<Double> derniereMesure(String nomStation) throws Exception {
 
@@ -134,8 +161,57 @@ public class LectureBase {
         }
     }
 
+    public double[][] getTimestampedDataset(String stationName, String selectedType) {
+
+        Map<Long, Double> valuesMap;
+        try {
+            valuesMap = getValuesFromStationOfType(stationName, selectedType);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        int mapSize = valuesMap.size();
+        double[] timeValues = new double[mapSize];
+        double[] dataValues;
+
+        if (valuesMap.isEmpty())
+            return null;
+
+        if (!(selectedType.equalsIgnoreCase("Time") || selectedType.equalsIgnoreCase("Temps")))
+            timeValues = valuesMap.values().stream().mapToDouble(Double::valueOf).toArray();
+
+        dataValues = valuesMap.keySet().stream().mapToDouble(Double::valueOf).toArray();
+
+        return new double[][] {timeValues, dataValues};
+    }
+
+    public double[][] getBiQuantityDataset(String stationName, String selectedTypeX, String selectedTypeY) {
+
+        Map<Long, Double> valuesMapX, valuesMapY;
+        try {
+            valuesMapX = getValuesFromStationOfType(stationName, selectedTypeX);
+            valuesMapY = getValuesFromStationOfType(stationName, selectedTypeY);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (valuesMapX.isEmpty() || valuesMapY.isEmpty() || valuesMapX.size() != valuesMapY.size())
+            return null;
+
+        double[][] result = new double[2][];
+        result[0] = valuesMapX.values().stream().mapToDouble(Double::valueOf).toArray();
+        result[1] = valuesMapY.values().stream().mapToDouble(Double::valueOf).toArray();
+
+        return result;
+    }
+
     public String getDatabaseUrl() {
 
         return "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
     }
+
 }
