@@ -32,7 +32,7 @@ public class DBManager {
             setupDB("/sql/creationTables.sql", "/sql/insertionData.sql");
         }
         try {
-            this.insertMeasureStmt = conn.prepareStatement("insert into mesure (idCapteur, valeur, dateMesure) values ( ?, ?, ? )");
+            this.insertMeasureStmt = conn.prepareStatement("insert into P2I2P4.mesure (idCapteur, valeur, dateMesure) values ( ?, ?, ? )");
         } catch (SQLException e) {
             Main.console.err(e);
             System.exit(-2);
