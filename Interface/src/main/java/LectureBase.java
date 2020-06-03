@@ -7,7 +7,7 @@ public class LectureBase {
 
     private final String serveurBD = "localhost";
     private final String portBD = "3306";
-    private final String nomBD = "p2i2p4";
+    private final String nomBD = "P2I2P4";
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
@@ -46,13 +46,13 @@ public class LectureBase {
         try {
             this.selectAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
             this.selectStationFromNomStatement = this.connection.prepareStatement("SELECT idStation FROM station WHERE station.nomStation = ?");
-            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType, symbol FROM typecapteur, capteur, station WHERE typecapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=? order by capteur.idTypeCapteur");
+            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType, symbol FROM typeCapteur, capteur, station WHERE typeCapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=? order by capteur.idTypeCapteur");
 
             // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
             this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ? order by capteur.idTypeCapteur;");
 
             this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur;");
-            this.selectAllValuesFromStationOfType = this.connection.prepareStatement("select dateMesure, valeur from mesure, station, capteur, typecapteur where station.nomStation = ? and typecapteur.libelleType = ? and capteur.idTypeCapteur = typecapteur.idTypeCapteur and station.idStation = capteur.idStation and mesure.idCapteur = capteur.idCapteur order by dateMesure;");
+            this.selectAllValuesFromStationOfType = this.connection.prepareStatement("select dateMesure, valeur from mesure, station, capteur, typeCapteur where station.nomStation = ? and typeCapteur.libelleType = ? and capteur.idTypeCapteur = typeCapteur.idTypeCapteur and station.idStation = capteur.idStation and mesure.idCapteur = capteur.idCapteur order by dateMesure;");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
