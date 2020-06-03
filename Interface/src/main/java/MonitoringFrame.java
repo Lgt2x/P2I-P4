@@ -92,7 +92,8 @@ public class MonitoringFrame extends JFrame {
             System.out.println("gotten grandeurs: " + Arrays.toString(grandeurs.toArray()));
             System.out.println("gotten values: " + Arrays.toString(values.toArray()));
 
-            throw new Exception("Erreur dans les requêtes, nombre de valeurs et nombre de grandeurs différents");
+            // la ligne d'après fait une erreur...
+            //throw new Exception("Erreur dans les requêtes, nombre de valeurs et nombre de grandeurs différents");
         }
 
         TableModel tableModel = new DefaultTableModel(values.size(), 3);
