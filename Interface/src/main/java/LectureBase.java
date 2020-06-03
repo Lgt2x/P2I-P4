@@ -161,7 +161,9 @@ public class LectureBase {
         }
     }
 
-    public double[][] getTimestampedDataset(String stationName, String selectedType) {
+    public double[][] getTimestampedDataset(String stationName, String selectedTypeX, String selectedTypeY, boolean xIsTimeAxis) {
+
+        String selectedType = xIsTimeAxis ? selectedTypeY : selectedTypeX;
 
         Map<Long, Double> valuesMap;
         try {
@@ -172,19 +174,15 @@ public class LectureBase {
             return null;
         }
 
-        int mapSize = valuesMap.size();
-        double[] timeValues = new double[mapSize];
-        double[] dataValues;
+        double[] timeValues, dataValues;
 
         if (valuesMap.isEmpty())
             return null;
 
-        if (!(selectedType.equalsIgnoreCase("Time") || selectedType.equalsIgnoreCase("Temps")))
-            timeValues = valuesMap.values().stream().mapToDouble(Double::valueOf).toArray();
+        timeValues = valuesMap.keySet().stream().mapToDouble(Double::valueOf).toArray();
+        dataValues = valuesMap.values().stream().mapToDouble(Double::valueOf).toArray();
 
-        dataValues = valuesMap.keySet().stream().mapToDouble(Double::valueOf).toArray();
-
-        return new double[][] {timeValues, dataValues};
+        return new double[][] { xIsTimeAxis ? timeValues : dataValues, xIsTimeAxis ? dataValues : timeValues };
     }
 
     public double[][] getBiQuantityDataset(String stationName, String selectedTypeX, String selectedTypeY) {
