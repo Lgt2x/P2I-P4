@@ -19,8 +19,7 @@ public class LectureBase {
             //System.out.println("Driver trouvé...");
             //Création d'une connexion sur la base de donnée
 
-            String urlJDBC = "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD;
-            urlJDBC += "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
+            String urlJDBC = getDatabaseUrl();
 
             System.out.println("Connexion à " + urlJDBC);
             this.connection = DriverManager.getConnection(urlJDBC, this.loginBD, this.motdepasseBD);
@@ -40,11 +39,11 @@ public class LectureBase {
         try {
             this.selectAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
             this.selectStationFromNomStatement = this.connection.prepareStatement("SELECT idStation FROM station WHERE station.nomStation = ?");
-            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType FROM typecapteur, capteur, station WHERE typecapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=?");
+            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType, symbol FROM typecapteur, capteur, station WHERE typecapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=? order by capteur.idTypeCapteur");
 
             // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
-            this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?;");
-            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ?");
+            this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ? order by capteur.idTypeCapteur;");
+            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -90,9 +89,9 @@ public class LectureBase {
             this.selectGrandeursStationStatement.setInt(1, getIdStation(nomStation));
             ResultSet rs = selectGrandeursStationStatement.executeQuery();
             ArrayList<String> grandeurs = new ArrayList();
-            while (rs.next()) {
-                grandeurs.add(rs.getString("libelleType"));
-            }
+
+            while (rs.next())
+                grandeurs.add(rs.getString("libelleType") + "|" + rs.getString("symbol"));
 
             return grandeurs;
 
@@ -103,37 +102,40 @@ public class LectureBase {
     }
 
 
-    public Double[] derniereMesure(String nomStation) throws Exception {
+    public ArrayList<Double> derniereMesure(String nomStation) throws Exception {
 
         return derniereMesure(getIdStation(nomStation));
     }
-
-    public Double[] derniereMesure(int idStation) throws Exception {
+    public ArrayList<Double> derniereMesure(int idStation) throws Exception {
 
         try {
-            Double[] valeurs = new Double[9];
 
             this.selectCapteursDuneStationStatement.setInt(1, idStation);
             ResultSet capteurs = this.selectCapteursDuneStationStatement.executeQuery();
+
+            ArrayList<Double> values = new ArrayList<>();
+
             while (capteurs.next()) {
 
-                int row = capteurs.getRow();
                 selectLastMesureStatement.setInt(1, idStation);
                 selectLastMesureStatement.setInt(3, idStation);
                 selectLastMesureStatement.setInt(2, capteurs.getInt("idTypeCapteur"));
                 selectLastMesureStatement.setInt(4, capteurs.getInt("idTypeCapteur"));
                 ResultSet rs = selectLastMesureStatement.executeQuery();
 
-                while (rs.next()) {
-                    valeurs[row - 1] = rs.getDouble("valeur");
-                }
+                while (rs.next())
+                    values.add(rs.getDouble("valeur"));
             }
 
-            return valeurs;
-
+            return values;
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
             throw new Exception("Erreur dans la récupération des valeurs actuelles");
         }
+    }
+
+    public String getDatabaseUrl() {
+
+        return "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
     }
 }
