@@ -115,6 +115,7 @@ public class MonitoringFrame extends JFrame {
             System.out.println("gotten grandeurs: " + Arrays.toString(grandeurs.toArray()));
             System.out.println("gotten values: " + Arrays.toString(values.toArray()));
 
+            // TODO investiguer les pbs et ajouter un message d'erreur propre et spécifique
             throw new Exception("Erreur dans les requêtes, nombre de valeurs et nombre de grandeurs différents");
         }
 
@@ -182,16 +183,29 @@ public class MonitoringFrame extends JFrame {
             return;
 
         // {xAxisValues, yAxisValues}
-        double[][] dataSet = null;
+        double[][] dataSet;
         if (xAxisChoice.getSelectedIndex() == 0 || yAxisChoice.getSelectedIndex() == 0)
             dataSet = bd.getTimestampedDataset(station, selectedXType, selectedYType, xAxisChoice.getSelectedIndex() == 0);
         else
             dataSet = bd.getBiQuantityDataset(station, selectedXType, selectedYType);
 
         if (dataSet != null && dataSet[0] != null && dataSet[1] != null && dataSet[0].length == dataSet[1].length && dataSet[0].length != 0) {
-            chart = QuickChart.getChart("Graphique", xAxisChoice.getSelectedItem().toString(), yAxisChoice.getSelectedItem().toString(), choixStation.getSelectedItem().toString(), dataSet[0], dataSet[1]);
+            chart = QuickChart.getChart("Graphique",
+                                        xAxisChoice.getSelectedItem().toString() + " (" + getUnitFromTable(xAxisChoice.getSelectedItem().toString()) + ")",
+                                        yAxisChoice.getSelectedItem().toString() + " (" + getUnitFromTable(yAxisChoice.getSelectedItem().toString()) + ")",
+                                        choixStation.getSelectedItem().toString(),
+                                        dataSet[0], dataSet[1]);
             buildChart(false);
         }
+    }
+
+    public String getUnitFromTable(String rowToFind) {
+
+        for (int i = 0; i < tableValeursStation.getRowCount(); ++i)
+            if (tableValeursStation.getModel().getValueAt(i, 0).toString().equalsIgnoreCase(rowToFind))
+                return tableValeursStation.getModel().getValueAt(i, 2).toString();
+
+        return "Timestamp";
     }
 
     {
