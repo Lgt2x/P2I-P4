@@ -15,6 +15,11 @@ import java.time.Instant;
  */
 public class DBManager {
 
+    private final String serveurBD = "localhost";
+    private final String portBD = "3306";
+    private final String nomBD = "P2I2P4";
+    private final String loginBD = "root";
+    private final String motdepasseBD = "root";
     private final String connectionString;
     private Connection conn;
     private PreparedStatement insertMeasureStmt;
@@ -22,7 +27,9 @@ public class DBManager {
     public DBManager(String connectionString) {
         this.connectionString = connectionString;
         try {
-            this.conn = DriverManager.getConnection(connectionString);
+            String urlJDBC = getDatabaseUrl();
+            System.out.println("Connexion à " + urlJDBC);
+            this.conn = DriverManager.getConnection(urlJDBC, this.loginBD, this.motdepasseBD);
         } catch (SQLException e) {
             Main.console.err(e);
             System.exit(-2);
@@ -70,10 +77,15 @@ public class DBManager {
             insertMeasureStmt.setInt(1, idCapteur);
             insertMeasureStmt.setDouble(2, value);
             insertMeasureStmt.setTimestamp(3, Timestamp.from(Instant.now()));
-            insertMeasureStmt.execute();
+            insertMeasureStmt.executeUpdate();
+            System.out.println(insertMeasureStmt);
             ResultSet rs = insertMeasureStmt.getResultSet();
         } catch (SQLException e) {
             Main.console.err(e);
         }
+    }
+
+    public String getDatabaseUrl() {
+        return "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
     }
 }

@@ -1,15 +1,22 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LectureBase {
 
     private final String serveurBD = "localhost";
     private final String portBD = "3306";
-    private final String nomBD = "p2i2p4";
+    private final String nomBD = "P2I2P4";
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
-    private PreparedStatement selectLastMesureStatement = null, selectCapteursDuneStationStatement = null, selectAllStationsStatement = null, selectStationFromNomStatement = null, selectGrandeursStationStatement = null;
+    private PreparedStatement   selectLastMesureStatement = null,
+                                selectCapteursDuneStationStatement = null,
+                                selectAllStationsStatement = null,
+                                selectStationFromNomStatement = null,
+                                selectGrandeursStationStatement = null,
+                                selectAllValuesFromStationOfType = null;
 
     public void connexionBD() throws Exception {
 
@@ -39,11 +46,13 @@ public class LectureBase {
         try {
             this.selectAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
             this.selectStationFromNomStatement = this.connection.prepareStatement("SELECT idStation FROM station WHERE station.nomStation = ?");
-            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType, symbol FROM typecapteur, capteur, station WHERE typecapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=? order by capteur.idTypeCapteur");
+            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType, symbol FROM typeCapteur, capteur, station WHERE typeCapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=? order by capteur.idTypeCapteur");
 
             // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
             this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ? order by capteur.idTypeCapteur;");
-            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur");
+
+            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur;");
+            this.selectAllValuesFromStationOfType = this.connection.prepareStatement("select dateMesure, valeur from mesure, station, capteur, typeCapteur where station.nomStation = ? and typeCapteur.libelleType = ? and capteur.idTypeCapteur = typeCapteur.idTypeCapteur and station.idStation = capteur.idStation and mesure.idCapteur = capteur.idCapteur order by dateMesure;");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -66,7 +75,7 @@ public class LectureBase {
         }
     }
 
-    public ArrayList nomsStations() throws Exception {
+    public ArrayList<String> nomsStations() throws Exception {
 
         try {
             // À compléter
@@ -84,7 +93,7 @@ public class LectureBase {
         }
     }
 
-    public ArrayList grandeurStations(String nomStation) throws Exception {
+    public ArrayList<String> grandeurStations(String nomStation) throws Exception {
         try {
             this.selectGrandeursStationStatement.setInt(1, getIdStation(nomStation));
             ResultSet rs = selectGrandeursStationStatement.executeQuery();
@@ -101,6 +110,24 @@ public class LectureBase {
         }
     }
 
+    public Map<Long, Double> getValuesFromStationOfType(String nomStation, String type) {
+
+        Map<Long, Double> values = new HashMap<>();
+        try {
+            this.selectAllValuesFromStationOfType.setString(1, nomStation);
+            this.selectAllValuesFromStationOfType.setString(2, type);
+
+            ResultSet results = this.selectAllValuesFromStationOfType.executeQuery();
+
+            while (results.next())
+                values.put(results.getTimestamp("dateMesure").getTime(), results.getDouble("valeur"));
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return values;
+    }
 
     public ArrayList<Double> derniereMesure(String nomStation) throws Exception {
 
@@ -132,6 +159,52 @@ public class LectureBase {
             ex.printStackTrace(System.err);
             throw new Exception("Erreur dans la récupération des valeurs actuelles");
         }
+    }
+
+    public double[][] getTimestampedDataset(String stationName, String selectedTypeX, String selectedTypeY, boolean xIsTimeAxis) {
+
+        String selectedType = xIsTimeAxis ? selectedTypeY : selectedTypeX;
+
+        Map<Long, Double> valuesMap;
+        try {
+            valuesMap = getValuesFromStationOfType(stationName, selectedType);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        double[] timeValues, dataValues;
+
+        if (valuesMap.isEmpty())
+            return null;
+
+        timeValues = valuesMap.keySet().stream().mapToDouble(Double::valueOf).toArray();
+        dataValues = valuesMap.values().stream().mapToDouble(Double::valueOf).toArray();
+
+        return new double[][] { xIsTimeAxis ? timeValues : dataValues, xIsTimeAxis ? dataValues : timeValues };
+    }
+
+    public double[][] getBiQuantityDataset(String stationName, String selectedTypeX, String selectedTypeY) {
+
+        Map<Long, Double> valuesMapX, valuesMapY;
+        try {
+            valuesMapX = getValuesFromStationOfType(stationName, selectedTypeX);
+            valuesMapY = getValuesFromStationOfType(stationName, selectedTypeY);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        if (valuesMapX.isEmpty() || valuesMapY.isEmpty() || valuesMapX.size() != valuesMapY.size())
+            return null;
+
+        double[][] result = new double[2][];
+        result[0] = valuesMapX.values().stream().mapToDouble(Double::valueOf).toArray();
+        result[1] = valuesMapY.values().stream().mapToDouble(Double::valueOf).toArray();
+
+        return result;
     }
 
     public String getDatabaseUrl() {
