@@ -2,6 +2,7 @@ package fr.insalyon.p2i2_222b;
 
 import fr.insalyon.p2i2_222b.data.DataSource;
 import fr.insalyon.p2i2_222b.data.StationFaker;
+import fr.insalyon.p2i2_222b.data.StationPacketTracer;
 import fr.insalyon.p2i2_222b.sql.DBManager;
 import fr.insalyon.p2i2_222b.util.Console;
 
@@ -36,8 +37,8 @@ public class Main {
         console.log("ServiceCapteur v0.1.0");
 
         try {
-            //arduino = new StationPacketTracer(20001, 20002);
-            arduino = new StationFaker(500);
+            arduino = new StationPacketTracer(20001, 20002);
+            //arduino = new StationFaker(500);
             arduino.setDataHandler((data) -> {
                 console.log(DATETIME_FORMAT.format(new Date()) + " >> " + Arrays.toString(data));
                 db.saveMeasure(Integer.parseInt(data[1]), Double.parseDouble(data[2]));

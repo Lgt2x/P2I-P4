@@ -64,7 +64,7 @@ public class MonitoringFrame extends JFrame {
 
         ActionListener dataUpdater = e -> {
             try {
-                majMesures();
+                majMesures(0);
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
@@ -87,7 +87,7 @@ public class MonitoringFrame extends JFrame {
         yAxisChoice.addActionListener(chartUpdater);
 
         recupNomsStations();
-        majMesures();
+        majMesures(0);
         buildChart(true);
 
         splitPane.setDividerLocation(-1);
@@ -105,7 +105,7 @@ public class MonitoringFrame extends JFrame {
         choixStation.setSelectedIndex(0);
     }
 
-    public void majMesures() throws Exception {
+    public void majMesures(int timesUsed) throws Exception {
 
         ArrayList<Double> values = bd.derniereMesure(choixStation.getSelectedItem().toString());
         ArrayList<String> grandeurs = bd.grandeurStations(choixStation.getSelectedItem().toString());
@@ -115,8 +115,21 @@ public class MonitoringFrame extends JFrame {
             System.out.println("gotten grandeurs: " + Arrays.toString(grandeurs.toArray()));
             System.out.println("gotten values: " + Arrays.toString(values.toArray()));
 
-            // TODO investiguer les pbs et ajouter un message d'erreur propre et spécifique
-            throw new Exception("Erreur dans les requêtes, nombre de valeurs et nombre de grandeurs différents");
+            // TODO supprimer les grandeurs sans valeurs, et si aucune grandeur n'a de valeur mettre un msg d'erreur
+            JOptionPane.showMessageDialog(this, "<html>Mesure manquante sur un des capteurs de la station '" + choixStation.getSelectedItem() + "', il est possiblement défectueux !<html>", "Valeurs manquantes", JOptionPane.WARNING_MESSAGE);
+
+            // on passe à la station suivante
+            choixStation.setSelectedIndex((choixStation.getSelectedIndex() + 1) % choixStation.getItemCount());
+
+            // on veut pas boucler à l'infini si toutes les stations n'ont pas de valeurs
+            if (timesUsed < choixStation.getItemCount())
+                majMesures(timesUsed + 1);
+            else {
+                JOptionPane.showMessageDialog(this, "<html>Toutes les stations sont défectueuses.<br> Arrêt de la mise à jour automatique</html>", "Totalité des stations défectueuses", JOptionPane.ERROR_MESSAGE);
+                realtimeCheckBox.setSelected(false);
+            }
+
+            return;
         }
 
         TableModel tableModel = new DefaultTableModel(new String[] { "Type", "Valeur", "Unité" }, values.size());

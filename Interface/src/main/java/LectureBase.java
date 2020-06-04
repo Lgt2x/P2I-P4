@@ -1,7 +1,5 @@
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class LectureBase {
 
@@ -112,7 +110,7 @@ public class LectureBase {
 
     public Map<Long, Double> getValuesFromStationOfType(String nomStation, String type) {
 
-        Map<Long, Double> values = new HashMap<>();
+        Map<Long, Double> values = new LinkedHashMap<>();
         try {
             this.selectAllValuesFromStationOfType.setString(1, nomStation);
             this.selectAllValuesFromStationOfType.setString(2, type);
