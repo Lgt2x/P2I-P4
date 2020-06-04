@@ -51,8 +51,8 @@ public class MonitoringFrame extends JFrame {
 
         super("Monitoring de stations");
 
-        setResizable(false);
-        setSize(800, 600);
+        setResizable(true);
+        setSize(1000, 700);
         setContentPane(mainPanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
