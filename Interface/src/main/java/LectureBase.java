@@ -108,9 +108,9 @@ public class LectureBase {
         }
     }
 
-    public Map<Long, Double> getValuesFromStationOfType(String nomStation, String type) {
+    public LinkedHashMap<Long, Double> getValuesFromStationOfType(String nomStation, String type) {
 
-        Map<Long, Double> values = new LinkedHashMap<>();
+        LinkedHashMap<Long, Double> values = new LinkedHashMap<>();
         try {
             this.selectAllValuesFromStationOfType.setString(1, nomStation);
             this.selectAllValuesFromStationOfType.setString(2, type);
@@ -185,7 +185,7 @@ public class LectureBase {
 
     public double[][] getBiQuantityDataset(String stationName, String selectedTypeX, String selectedTypeY) {
 
-        Map<Long, Double> valuesMapX, valuesMapY;
+        LinkedHashMap<Long, Double> valuesMapX, valuesMapY;
         try {
             valuesMapX = getValuesFromStationOfType(stationName, selectedTypeX);
             valuesMapY = getValuesFromStationOfType(stationName, selectedTypeY);
@@ -195,8 +195,20 @@ public class LectureBase {
             return null;
         }
 
-        if (valuesMapX.isEmpty() || valuesMapY.isEmpty() || valuesMapX.size() != valuesMapY.size())
-            return null;
+        if (valuesMapX.isEmpty() || valuesMapY.isEmpty() || valuesMapX.size() != valuesMapY.size()) {
+
+            // FIXME when dataset is done, re-query data with LIMIT = min(valuesMapX.size(), valuesMaxY.size())
+            System.out.println("maps sizes different, removing some values");
+
+            LinkedHashMap<Long, Double> tooMuchInfoMap = valuesMapX.size() > valuesMapY.size() ? valuesMapX : valuesMapY;
+            LinkedHashMap<Long, Double> otherMap = tooMuchInfoMap == valuesMapX ? valuesMapY : valuesMapX;
+
+            Iterator iterator = tooMuchInfoMap.entrySet().iterator();
+            while(tooMuchInfoMap.size() > otherMap.size()) {
+                iterator.remove();
+                iterator.next();
+            }
+        }
 
         double[][] result = new double[2][];
         result[0] = valuesMapX.values().stream().mapToDouble(Double::valueOf).toArray();
