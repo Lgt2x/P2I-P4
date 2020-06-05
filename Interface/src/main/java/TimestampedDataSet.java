@@ -1,10 +1,10 @@
-import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.XYChart;
+import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.internal.chartpart.Chart;
-import org.knowm.xchart.internal.series.Series;
+import org.knowm.xchart.style.colors.XChartSeriesColors;
 
-import java.util.Map;
+import java.util.*;
 
 public class TimestampedDataSet extends DataSet {
 
@@ -13,6 +13,7 @@ public class TimestampedDataSet extends DataSet {
         super(bd, stationName, typeX, typeY);
 
         boolean isXTime;
+
         dataset = bd.getTimestampedDataset(stationName, typeX, typeY, isXTime = typeX.equalsIgnoreCase("Temps"));
         graphType = XYSeries.XYSeriesRenderStyle.Line;
 
@@ -21,11 +22,10 @@ public class TimestampedDataSet extends DataSet {
         if(dataInfos == null)
             throw new Exception("Erreur construction du dataset, la DB n'a pas renvoyé un résultat correct");
 
+        int timeIndex = 0;
+        int dataIndex = 1;
 
-        int timeIndex = isXTime ? 0 : 1;
-        int dataIndex = (timeIndex + 1) % 2;
-
-        units[timeIndex] = "Timestamp";
+        units[timeIndex] = "date-heure";
         units[dataIndex] = dataInfos[0].toString();
 
         lowerThresholds[timeIndex] = null;
@@ -44,12 +44,25 @@ public class TimestampedDataSet extends DataSet {
         if (dataset == null || dataset[0] == null || dataset[1] == null || dataset[0].length != dataset[1].length || dataset[0].length == 0)
             return null;
 
-        // TODO échelle de temps
-        XYChart chart = QuickChart.getChart("Graphique",
-                                   typeX + " (" + units[0] + ")",
-                                   typeY + " (" + units[1] + ")",
-                                            stationName,
-                                            dataset[0], dataset[1]);
+        XYChart chart = new XYChartBuilder().title("Graphique").xAxisTitle(typeX + " (" + units[0] + ")").yAxisTitle(typeY + " (" + units[1] + ")").build();
+
+        chart.getStyler().setDatePattern("dd-MMM HH:mm");
+        chart.getStyler().setDecimalPattern("#0.000");
+        chart.getStyler().setLocale(Locale.FRANCE);
+
+        List<Date> xData = new ArrayList<>();
+        List<Double> yData = new ArrayList<>();
+
+        for(double val : dataset[0]){
+            xData.add(new Date((long) val));
+        }
+        for(double val : dataset[1]){
+            yData.add(val);
+        }
+
+        XYSeries series = chart.addSeries("Fake Data", xData , yData);
+        series.setXYSeriesRenderStyle(graphType);
+        series.setLineColor(XChartSeriesColors.BLUE);
 
         makeXYThreshold(chart, dataset[1], lowerThresholds[0], "bas", typeX);
         makeXYThreshold(chart, dataset[0], lowerThresholds[1], "bas", typeY);
