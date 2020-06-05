@@ -1,6 +1,3 @@
-import org.h2.message.DbException;
-import org.h2.tools.Server;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,16 +28,6 @@ public class LectureBase {
             //Class.forName("com.mysql.jdbc.Driver");
             //System.out.println("Driver trouvé...");
             //Création d'une connexion sur la base de donnée
-
-            if (useH2) {
-                Server h2server = null;
-                try {
-                    h2server = Server.createTcpServer("-tcpPort", "9123", "-tcpAllowOthers", "-tcpDaemon", "-baseDir", "./../db", "-ifNotExists");
-                    h2server.start();
-                } catch (DbException e) {
-                    // Ignored, the server is already in place
-                }
-            }
 
             String urlJDBC = getDatabaseUrl();
 
@@ -278,11 +265,18 @@ public class LectureBase {
             this.SELECTUnitsAndThresholdsFromDataType.setString(1, dataTypeName);
             ResultSet set = this.SELECTUnitsAndThresholdsFromDataType.executeQuery();
             set.next();
-            return new Object[] {
-                    set.getString("symbol"),
-                    set.getInt("seuilAlerteBas"),
-                    set.getInt("seuilAlerteHaut")
-            };
+
+            Object[] result = new Object[] {set.getString("symbol"), null, null};
+
+            int lowThresh = set.getInt("seuilAlerteBas");
+            if (!set.wasNull())
+                result[1] = lowThresh;
+
+            int highThresh = set.getInt("seuilAlerteHaut");
+            if (!set.wasNull())
+                result[2] = highThresh;
+
+            return result;
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();

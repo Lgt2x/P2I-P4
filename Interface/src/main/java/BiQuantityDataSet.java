@@ -24,11 +24,15 @@ public class BiQuantityDataSet extends DataSet {
         units[0] = xDataInfo[0].toString();
         units[1] = yDataInfo[0].toString();
 
-        lowerThresholds[0] = Integer.valueOf(xDataInfo[1].toString());
-        lowerThresholds[1] = Integer.valueOf(yDataInfo[1].toString());
+        if (xDataInfo[1] != null)
+            lowerThresholds[0] = Integer.valueOf(xDataInfo[1].toString());
+        if (yDataInfo[1] != null)
+            lowerThresholds[1] = Integer.valueOf(yDataInfo[1].toString());
 
-        higherThresholds[0] = Integer.valueOf(xDataInfo[2].toString());
-        higherThresholds[1] = Integer.valueOf(yDataInfo[2].toString());
+        if (xDataInfo[2] != null)
+            higherThresholds[0] = Integer.valueOf(xDataInfo[2].toString());
+        if (yDataInfo[2] != null)
+            higherThresholds[1] = Integer.valueOf(yDataInfo[2].toString());
     }
 
     @Override

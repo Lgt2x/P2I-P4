@@ -156,7 +156,9 @@ public class MonitoringFrame extends JFrame {
         xAxisChoice.setSelectedItem(previousChoiceXAxis);
 
         yAxisChoice.setSelectedItem(previousChoiceYAxis);
-        yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
+
+        if (yAxisChoice.getSelectedIndex() == 0 && xAxisChoice.getSelectedIndex() == 0)
+            yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
 
         tableValeursStation.setModel(tableModel);
 
@@ -197,6 +199,7 @@ public class MonitoringFrame extends JFrame {
 
         if (selectedXType.equalsIgnoreCase("undefined") || selectedYType.equalsIgnoreCase("undefined"))
             return;
+
         try {
             dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
             chart = dataset.makeChart();

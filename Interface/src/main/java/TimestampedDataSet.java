@@ -1,6 +1,10 @@
 import org.knowm.xchart.QuickChart;
+import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.internal.chartpart.Chart;
+import org.knowm.xchart.internal.series.Series;
+
+import java.util.Map;
 
 public class TimestampedDataSet extends DataSet {
 
@@ -27,8 +31,11 @@ public class TimestampedDataSet extends DataSet {
         lowerThresholds[timeIndex] = null;
         higherThresholds[timeIndex] = null;
 
-        lowerThresholds[dataIndex] = Integer.valueOf(dataInfos[1].toString());
-        higherThresholds[dataIndex] = Integer.valueOf(dataInfos[2].toString());
+        if (dataInfos[1] != null)
+            lowerThresholds[dataIndex] = Integer.valueOf(dataInfos[1].toString());
+
+        if (dataInfos[2] != null)
+            higherThresholds[dataIndex] = Integer.valueOf(dataInfos[2].toString());
     }
 
     @Override
@@ -38,10 +45,17 @@ public class TimestampedDataSet extends DataSet {
             return null;
 
         // TODO échelle de temps
-        return QuickChart.getChart("Graphique",
+        XYChart chart = QuickChart.getChart("Graphique",
                                    typeX + " (" + units[0] + ")",
                                    typeY + " (" + units[1] + ")",
-                                   stationName,
-                                   dataset[0], dataset[1]);
+                                            stationName,
+                                            dataset[0], dataset[1]);
+
+        makeXYThreshold(chart, dataset[1], lowerThresholds[0], "bas", typeX);
+        makeXYThreshold(chart, dataset[0], lowerThresholds[1], "bas", typeY);
+        makeXYThreshold(chart, dataset[1], higherThresholds[0], "haut", typeX);
+        makeXYThreshold(chart, dataset[0], higherThresholds[1], "haut", typeY);
+
+        return chart;
     }
 }

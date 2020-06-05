@@ -1,6 +1,10 @@
+import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.internal.chartpart.Chart;
+import org.knowm.xchart.internal.series.Series;
+
+import java.util.Arrays;
 
 public abstract class DataSet {
 
@@ -31,5 +35,19 @@ public abstract class DataSet {
             return new TimestampedDataSet(bd, stationName, typeX, typeY);
         else
             return new BiQuantityDataSet(bd, stationName, typeX, typeY);
+    }
+
+    protected void makeXYThreshold(XYChart chart, double[] otherDataValues, Integer threshold, String thresholdType, String typeName) {
+
+        if (threshold == null)
+            return;
+
+        boolean thresholdOnX = typeName.equalsIgnoreCase(typeX);
+
+        String seriesName = "Seuil " + thresholdType + " de " + threshold + units[thresholdOnX ? 0 : 1];
+        double[] thresholdHeight = new double[] {threshold, threshold};
+        double[] thresholdWidth = new double[] { Arrays.stream(otherDataValues).min().getAsDouble(), Arrays.stream(otherDataValues).max().getAsDouble() };
+
+        chart.getSeriesMap().put(seriesName, new XYSeries(seriesName, thresholdOnX ? thresholdHeight : thresholdWidth, thresholdOnX ? thresholdWidth : thresholdHeight, null, Series.DataType.Number));
     }
 }
