@@ -200,7 +200,10 @@ public class MonitoringFrame extends JFrame {
             return;
 
         // {xAxisValues, yAxisValues}
-        DataSet dataset = null;
+        DataSet dataset;
+
+        if (selectedXType.equalsIgnoreCase("undefined") || selectedYType.equalsIgnoreCase("undefined"))
+            return;
         try {
             dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
             chart = dataset.makeChart();

@@ -59,7 +59,7 @@ public class LectureBase {
 
             this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur;");
             this.selectAllValuesFromStationOfType = this.connection.prepareStatement("select dateMesure, valeur from mesure, station, capteur, typeCapteur where station.nomStation = ? and typeCapteur.libelleType = ? and capteur.idTypeCapteur = typeCapteur.idTypeCapteur and station.idStation = capteur.idStation and mesure.idCapteur = capteur.idCapteur order by dateMesure;");
-            this.selectUnitsAndThresholdsFromDataType = this.connection.prepareStatement("select unite, seuilAlerteBas, seuilAlerteHaut from typecapteur where libelleType = ?");
+            this.selectUnitsAndThresholdsFromDataType = this.connection.prepareStatement("select symbol, seuilAlerteBas, seuilAlerteHaut from typecapteur where libelleType = ?");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -232,9 +232,11 @@ public class LectureBase {
         try {
             this.selectUnitsAndThresholdsFromDataType.setString(1, dataTypeName);
             ResultSet set = this.selectUnitsAndThresholdsFromDataType.executeQuery();
-            return new Object[] { set.getString("unite"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut") };
-        } catch (SQLException e) {
-            e.printStackTrace();
+            set.next();
+            return new Object[] { set.getString("symbol"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut") };
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
 
         return null;

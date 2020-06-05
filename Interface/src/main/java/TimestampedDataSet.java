@@ -27,8 +27,8 @@ public class TimestampedDataSet extends DataSet {
         lowerThresholds[timeIndex] = null;
         higherThresholds[timeIndex] = null;
 
-        lowerThresholds[dataIndex] = Integer.valueOf(dataInfos[0].toString());
-        higherThresholds[dataIndex] = Integer.valueOf(dataInfos[1].toString());
+        lowerThresholds[dataIndex] = Integer.valueOf(dataInfos[1].toString());
+        higherThresholds[dataIndex] = Integer.valueOf(dataInfos[2].toString());
     }
 
     @Override
