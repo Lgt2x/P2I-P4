@@ -9,12 +9,27 @@ import java.awt.Color;
 
 public class BiQuantityDataSet extends DataSet {
 
-    public BiQuantityDataSet(LectureBase bd, String stationName,  String typeX, String typeY) {
+    public BiQuantityDataSet(LectureBase bd, String stationName,  String typeX, String typeY) throws Exception{
 
         super(bd, stationName, typeX, typeY);
 
         dataset = bd.getBiQuantityDataset(stationName, typeX, typeY);
         graphType = XYSeries.XYSeriesRenderStyle.Scatter;
+
+        Object[] xDataInfo = source.getDataTypeInfo(typeX);
+        Object[] yDataInfo = source.getDataTypeInfo(typeY);
+
+        if(xDataInfo == null || yDataInfo == null)
+            throw new Exception("Erreur construction du dataset, la DB n'a pas renvoyé un résultat correct");
+
+        units[0] = xDataInfo[0].toString();
+        units[1] = yDataInfo[0].toString();
+
+        lowerThresholds[0] = Integer.valueOf(xDataInfo[1].toString());
+        lowerThresholds[1] = Integer.valueOf(yDataInfo[1].toString());
+
+        higherThresholds[0] = Integer.valueOf(xDataInfo[2].toString());
+        higherThresholds[1] = Integer.valueOf(yDataInfo[2].toString());
     }
 
     @Override
@@ -24,8 +39,8 @@ public class BiQuantityDataSet extends DataSet {
             return null;
 
         Chart chart = QuickChart.getChart("Graphique",
-                                    typeX + " (" + /* TODO: ajouter unités + */ ")",
-                                    typeY + " (" + /* TODO: ajouter unités + */ ")",
+                                    typeX + " (" + units[0] + ")",
+                                    typeY + " (" + units[1] + ")",
                                     stationName,
                                     dataset[0], dataset[1]);
 

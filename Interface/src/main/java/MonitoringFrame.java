@@ -200,10 +200,16 @@ public class MonitoringFrame extends JFrame {
             return;
 
         // {xAxisValues, yAxisValues}
-        DataSet dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
-        double[][] dataSet = dataset.dataset;
-        chart = dataset.makeChart();
-        buildChart(false);
+        DataSet dataset = null;
+        try {
+            dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
+            chart = dataset.makeChart();
+            buildChart(false);
+
+        } catch (Exception e) {
+            System.err.println("Impossible de générer un DataSet correct. Le graph n'a pas pu être construit");
+            e.printStackTrace();
+        }
     }
 
     public String getUnitFromTable(String rowToFind) {
@@ -337,5 +343,4 @@ public class MonitoringFrame extends JFrame {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() { return mainPanel; }
-
 }

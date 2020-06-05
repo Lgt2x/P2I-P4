@@ -4,12 +4,31 @@ import org.knowm.xchart.internal.chartpart.Chart;
 
 public class TimestampedDataSet extends DataSet {
 
-    public TimestampedDataSet(LectureBase bd, String stationName, String typeX, String typeY) {
+    public TimestampedDataSet(LectureBase bd, String stationName, String typeX, String typeY) throws Exception {
 
         super(bd, stationName, typeX, typeY);
 
-        dataset = bd.getTimestampedDataset(stationName, typeX, typeY, typeX.equalsIgnoreCase("Temps"));
+        boolean isXTime;
+        dataset = bd.getTimestampedDataset(stationName, typeX, typeY, isXTime = typeX.equalsIgnoreCase("Temps"));
         graphType = XYSeries.XYSeriesRenderStyle.Line;
+
+        Object[] dataInfos = source.getDataTypeInfo(isXTime ? typeY : typeX);
+
+        if(dataInfos == null)
+            throw new Exception("Erreur construction du dataset, la DB n'a pas renvoyé un résultat correct");
+
+
+        int timeIndex = isXTime ? 0 : 1;
+        int dataIndex = (timeIndex + 1) % 2;
+
+        units[timeIndex] = "Timestamp";
+        units[dataIndex] = dataInfos[0].toString();
+
+        lowerThresholds[timeIndex] = null;
+        higherThresholds[timeIndex] = null;
+
+        lowerThresholds[dataIndex] = Integer.valueOf(dataInfos[0].toString());
+        higherThresholds[dataIndex] = Integer.valueOf(dataInfos[1].toString());
     }
 
     @Override
@@ -20,8 +39,8 @@ public class TimestampedDataSet extends DataSet {
 
         // TODO échelle de temps
         return QuickChart.getChart("Graphique",
-                                   typeX + " (" + /* TODO: ajouter unités + */ ")",
-                                   typeY + " (" + /* TODO: ajouter unités + */ ")",
+                                   typeX + " (" + units[0] + ")",
+                                   typeY + " (" + units[1] + ")",
                                    stationName,
                                    dataset[0], dataset[1]);
     }
