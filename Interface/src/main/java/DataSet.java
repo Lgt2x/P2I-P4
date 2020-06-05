@@ -5,6 +5,8 @@ import org.knowm.xchart.internal.chartpart.Chart;
 import org.knowm.xchart.internal.series.Series;
 
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 public abstract class DataSet {
 
@@ -37,7 +39,7 @@ public abstract class DataSet {
             return new BiQuantityDataSet(bd, stationName, typeX, typeY);
     }
 
-    protected void makeXYThreshold(XYChart chart, double[] otherDataValues, Integer threshold, String thresholdType, String typeName) {
+    protected void makeXYThreshold(XYChart chart, double[] otherDataValues, Integer threshold, String thresholdType, String typeName, boolean isXTime) {
 
         if (threshold == null)
             return;
@@ -45,12 +47,23 @@ public abstract class DataSet {
         boolean thresholdOnX = typeName.equalsIgnoreCase(typeX);
 
         String seriesName = "Seuil " + thresholdType + " de " + threshold + units[thresholdOnX ? 0 : 1];
-        double[] thresholdHeight = new double[] {threshold, threshold};
+        double[] thresholdHeight = new double[] {(double)threshold, (double)threshold};
         double[] thresholdWidth = new double[] { Arrays.stream(otherDataValues).min().getAsDouble(), Arrays.stream(otherDataValues).max().getAsDouble() };
 
-        XYSeries series = new XYSeries(seriesName, thresholdOnX ? thresholdHeight : thresholdWidth, thresholdOnX ? thresholdWidth : thresholdHeight, null, Series.DataType.Number);
-        series.setXYSeriesRenderStyle(XYSeriesRenderStyle.Line);
+        XYSeries series;
 
-        chart.getSeriesMap().put(seriesName, series);
+        if(isXTime){
+            List<Date> thresholdWidthDate = List.of(new Date((long)thresholdWidth[0]), new Date((long)thresholdWidth[1]));
+            List<Double> thresholdHeightDouble = List.of(thresholdHeight[0], thresholdHeight[1]);
+            series = chart.addSeries(seriesName, thresholdWidthDate, thresholdHeightDouble);
+        } else{
+            series = chart.addSeries(seriesName, thresholdOnX ? thresholdHeight : thresholdWidth, thresholdOnX ? thresholdWidth : thresholdHeight);
+        }
+
+        series.setXYSeriesRenderStyle(XYSeriesRenderStyle.Line);
+    }
+
+    protected void makeXYThreshold(XYChart chart, double[] otherDataValues, Integer threshold, String thresholdType, String typeName) {
+        makeXYThreshold(chart, otherDataValues, threshold, thresholdType, typeName, false);
     }
 }

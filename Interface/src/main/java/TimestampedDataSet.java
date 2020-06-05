@@ -47,7 +47,6 @@ public class TimestampedDataSet extends DataSet {
         XYChart chart = new XYChartBuilder().title("Graphique").xAxisTitle(typeX + " (" + units[0] + ")").yAxisTitle(typeY + " (" + units[1] + ")").build();
 
         chart.getStyler().setDatePattern("dd-MMM HH:mm");
-        chart.getStyler().setDecimalPattern("#0.000");
         chart.getStyler().setLocale(Locale.FRANCE);
 
         List<Date> xData = new ArrayList<>();
@@ -64,10 +63,12 @@ public class TimestampedDataSet extends DataSet {
         series.setXYSeriesRenderStyle(graphType);
         series.setLineColor(XChartSeriesColors.BLUE);
 
+
         makeXYThreshold(chart, dataset[1], lowerThresholds[0], "bas", typeX);
-        makeXYThreshold(chart, dataset[0], lowerThresholds[1], "bas", typeY);
+        makeXYThreshold(chart, dataset[0], lowerThresholds[1], "bas", typeY, true);
         makeXYThreshold(chart, dataset[1], higherThresholds[0], "haut", typeX);
-        makeXYThreshold(chart, dataset[0], higherThresholds[1], "haut", typeY);
+        makeXYThreshold(chart, dataset[0], higherThresholds[1], "haut", typeY, true);
+
 
         return chart;
     }

@@ -69,7 +69,7 @@ public class MonitoringFrame extends JFrame {
                 exception.printStackTrace();
             }
         };
-        ActionListener chartUpdater = e -> updateChart();
+        ActionListener chartUpdater = e -> buildChart(true);
 
         choixStation.addActionListener(dataUpdater);
         refreshButton.addActionListener(dataUpdater);
@@ -175,8 +175,13 @@ public class MonitoringFrame extends JFrame {
         if (resetChart)
             chart = null;
 
-        if (chart == null)
-            chart = QuickChart.getChart("Graphique", "axe-x", "axe-y", "station", new double[] { 0, 0 }, new double[] { 0, 0 });
+        if (chart == null){
+            updateChart();
+            if(chart == null){
+                chart = QuickChart.getChart("Graphique", "x-axe", "y-axe", "serie", new double[] {0}, new double[] {0});
+            }
+        }
+
 
         if (chartPanel != null)
             panelGraph.remove(chartPanel);
@@ -205,7 +210,6 @@ public class MonitoringFrame extends JFrame {
         try {
             dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
             chart = dataset.makeChart();
-            buildChart(false);
 
         } catch (Exception e) {
             System.err.println("Impossible de générer un DataSet correct. Le graph n'a pas pu être construit");
