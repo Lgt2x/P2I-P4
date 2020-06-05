@@ -4,11 +4,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
-import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.internal.chartpart.Chart;
-import org.knowm.xchart.style.XYStyler;
-import org.knowm.xchart.style.lines.SeriesLines;
-import org.knowm.xchart.style.markers.SeriesMarkers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -158,12 +154,9 @@ public class MonitoringFrame extends JFrame {
         }
 
         xAxisChoice.setSelectedItem(previousChoiceXAxis);
-        if (xAxisChoice.getSelectedItem() == null)
-            xAxisChoice.setSelectedIndex(0);
 
         yAxisChoice.setSelectedItem(previousChoiceYAxis);
-        if (yAxisChoice.getSelectedItem() == null)
-            yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
+        yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
 
         tableValeursStation.setModel(tableModel);
 
