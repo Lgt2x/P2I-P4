@@ -5,8 +5,8 @@ package fr.insalyon.p2i2_222b.data;
  */
 public class StationFaker extends DataSource {
 
+    private final int intervalleMs;
     private Thread stationThread;
-    private int intervalleMs;
 
     public StationFaker(int intervalleMs) {
         this.intervalleMs = intervalleMs;
@@ -18,18 +18,16 @@ public class StationFaker extends DataSource {
             try {
                 while (true) {
                     Thread.sleep(intervalleMs);
-                    // Genere des valeurs au pif
-                    int idStation = (int) Math.ceil(Math.random() * 4);
-                    int idCapteur = ((int) Math.ceil(Math.random() * 7)) * idStation;
+                    // On génère des valeurs au pif (mais correctes)
+                    int idStation = (int) Math.ceil(Math.random() * 2);
+                    int idCapteur = ((int) Math.ceil(Math.random() * 4)) * idStation;
                     double value = Math.random() * 400;
                     dataHandler.accept(new String[] {
                             Integer.toString(idStation),
                             Integer.toString(idCapteur),
                             Double.toString(value) });
                 }
-            } catch (InterruptedException e) {
-
-            }
+            } catch (InterruptedException e) { }
         });
         stationThread.setDaemon(true);
         stationThread.start();

@@ -18,7 +18,7 @@ VALUES ('Température', 'Degré Celsius', '°C'),
 
 INSERT INTO localisation(latitude, longitude, libelle)
 VALUES (45.625536, 5.132806, 'Maison Maxou'),
-       (45.780080, 4.857453,'Tête d Or'),
+       (45.780080, 4.857453, 'Tête d Or'),
        (45.782736, 4.890568, 'Périph Buers'),
        (45.783769, 4.872619, 'TC INSA LYON'),
        (45.744530, 4.862280, 'Chez Loulou'),
@@ -32,7 +32,7 @@ VALUES (45.625536, 5.132806, 'Maison Maxou'),
 
 INSERT INTO station (nomStation)
 VALUES ('Station Charlie'),
-        ('Station Barkhane');
+       ('Station Barkhane');
 
 INSERT INTO installation (dateDebut, dateFin, idLocalisation, idStation)
 VALUES ('2020-05-01', '2020-05-9', 1, 1),
@@ -42,12 +42,11 @@ VALUES ('2020-05-01', '2020-05-9', 1, 1),
 
 
 INSERT INTO capteur (idTypeCapteur, idStation)
-    VALUES
-           (6, 1),
-           (3, 1),
-           (2, 1),
-           (1, 1),
-           (4, 2),
-           (7, 2),
-           (8, 2),
-           (5, 2);
+VALUES (6, 1),
+       (3, 1),
+       (2, 1),
+       (1, 1),
+       (4, 2),
+       (7, 2),
+       (8, 2),
+       (5, 2);

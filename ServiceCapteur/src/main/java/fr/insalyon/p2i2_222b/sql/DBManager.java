@@ -3,6 +3,7 @@ package fr.insalyon.p2i2_222b.sql;
 import fr.insalyon.p2i2_222b.Main;
 import org.h2.tools.RunScript;
 
+import java.io.Closeable;
 import java.io.InputStreamReader;
 import java.sql.*;
 import java.time.Instant;
@@ -13,27 +14,23 @@ import java.time.Instant;
  * TODO il serait judicieux d'utiliser un connection pool
  * au lieu d'ouvrir une connection pour chaque requête.
  */
-public class DBManager {
+public class DBManager implements Closeable {
 
-    private final String serveurBD = "localhost";
-    private final String portBD = "3306";
-    private final String nomBD = "P2I2P4";
-    private final String loginBD = "root";
-    private final String motdepasseBD = "root";
-    private final String connectionString;
+    private static final String serveurBD = "localhost";
+    private static final String portBD = "3306";
+    private static final String nomBD = "P2I2P4";
+    private static final String loginBD = "root";
+    private static final String motdepasseBD = "root";
+    private String connectionString;
     private Connection conn;
     private PreparedStatement insertMeasureStmt;
 
-    public DBManager(String connectionString) {
-        this.connectionString = connectionString;
-        try {
-            String urlJDBC = getDatabaseUrl();
-            System.out.println("Connexion à " + urlJDBC);
-            this.conn = DriverManager.getConnection(urlJDBC, this.loginBD, this.motdepasseBD);
-        } catch (SQLException e) {
-            Main.console.err(e);
-            System.exit(-2);
-        }
+    public DBManager(String connectionString) throws SQLException {
+        this(DriverManager.getConnection(getDatabaseUrl(connectionString), loginBD, motdepasseBD));
+    }
+
+    public DBManager(Connection conn) {
+        this.conn = conn;
         if (!isDBSetup()) {
             Main.console.log("Mise en place de la BDD");
             setupDB("/sql/creationTables.sql", "/sql/insertionData.sql");
@@ -44,6 +41,13 @@ public class DBManager {
             Main.console.err(e);
             System.exit(-2);
         }
+    }
+
+    public static String getDatabaseUrl(String base) {
+        if (base.equals("mysql"))
+            return "jdbc:mysql://" + serveurBD + ":" + portBD + "/" + nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
+        else
+            return base;
     }
 
     /**
@@ -78,14 +82,20 @@ public class DBManager {
             insertMeasureStmt.setDouble(2, value);
             insertMeasureStmt.setTimestamp(3, Timestamp.from(Instant.now()));
             insertMeasureStmt.executeUpdate();
-            System.out.println(insertMeasureStmt);
             ResultSet rs = insertMeasureStmt.getResultSet();
         } catch (SQLException e) {
             Main.console.err(e);
         }
     }
 
-    public String getDatabaseUrl() {
-        return "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
+    @Override
+    public void close() {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
