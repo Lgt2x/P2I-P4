@@ -1,3 +1,6 @@
+import org.h2.message.DbException;
+import org.h2.tools.Server;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,6 +31,16 @@ public class LectureBase {
             //Class.forName("com.mysql.jdbc.Driver");
             //System.out.println("Driver trouvé...");
             //Création d'une connexion sur la base de donnée
+
+            if (useH2) {
+                Server h2server = null;
+                try {
+                    h2server = Server.createTcpServer("-tcpPort", "9123", "-tcpAllowOthers", "-tcpDaemon", "-baseDir", "./../db", "-ifNotExists");
+                    h2server.start();
+                } catch (DbException e) {
+                    // Ignored, the server is already in place
+                }
+            }
 
             String urlJDBC = getDatabaseUrl();
 
@@ -67,10 +80,10 @@ public class LectureBase {
                     "SELECT dateMesure, valeur " +
                             "FROM mesure, capteur " +
                             "WHERE dateMesure = (" +
-                                "SELECT MAX(dateMesure) " +
-                                "FROM mesure, capteur " +
-                                "WHERE capteur.idCapteur = mesure.idCapteur " +
-                                "AND capteur.idStation = ? AND capteur.idTypeCapteur = ?) " +
+                            "SELECT MAX(dateMesure) " +
+                            "FROM mesure, capteur " +
+                            "WHERE capteur.idCapteur = mesure.idCapteur " +
+                            "AND capteur.idStation = ? AND capteur.idTypeCapteur = ?) " +
                             "AND capteur.idCapteur = mesure.idCapteur " +
                             "AND capteur.idStation = ? " +
                             "AND capteur.idTypeCapteur = ? " +
@@ -90,8 +103,8 @@ public class LectureBase {
                             "ORDER BY dateMesure;");
 
             this.SELECTUnitsAndThresholdsFromDataType = this.connection.prepareStatement("" +
-                    "SELECT symbol, seuilAlerteBas, seuilAlerteHaut " +
-                    "FROM typeCapteur WHERE libelleType = ?");
+                                                                                                 "SELECT symbol, seuilAlerteBas, seuilAlerteHaut " +
+                                                                                                 "FROM typeCapteur WHERE libelleType = ?");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -222,7 +235,7 @@ public class LectureBase {
         timeValues = valuesMap.keySet().stream().mapToDouble(Double::valueOf).toArray();
         dataValues = valuesMap.values().stream().mapToDouble(Double::valueOf).toArray();
 
-        return new double[][]{xIsTimeAxis ? timeValues : dataValues, xIsTimeAxis ? dataValues : timeValues};
+        return new double[][] { xIsTimeAxis ? timeValues : dataValues, xIsTimeAxis ? dataValues : timeValues };
     }
 
     public double[][] getBiQuantityDataset(String stationName, String SELECTedTypeX, String SELECTedTypeY) {
@@ -265,7 +278,11 @@ public class LectureBase {
             this.SELECTUnitsAndThresholdsFromDataType.setString(1, dataTypeName);
             ResultSet set = this.SELECTUnitsAndThresholdsFromDataType.executeQuery();
             set.next();
-            return new Object[]{set.getString("symbol"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut")};
+            return new Object[] {
+                    set.getString("symbol"),
+                    set.getInt("seuilAlerteBas"),
+                    set.getInt("seuilAlerteHaut")
+            };
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
