@@ -6,15 +6,19 @@ DELETE FROM station;
 DELETE FROM localisation;
 DELETE FROM typeCapteur;
 
-INSERT INTO typeCapteur (libelleType, unite, symbol)
-VALUES ('Température', 'Degré Celsius', '°C'),
-       ('Humidité', 'Pourcentage', '%'),
-       ('Luminosité', 'Lux', 'lux'),
-       ('Concentration CO2', 'Parties par million', 'ppm'),
-       ('Concentration O2', 'Parties par million', 'ppm'),
-       ('Bruit', 'Décibel', 'dB'),
-       ('Particules fines', 'Parties par million', 'ppm'),
-       ('Pression', 'Pascal', 'Pa');
+-- seuilAlerteBas == NULL && seuilAlerteHaut == NULL : pas d'alerte
+-- seuilAlerteBas == NULL && seuilAlerteHaut != NULL : alerte au dessus de...
+-- seuilAlerteBas != NULL && seuilAlerteHaut == NULL : alerte en dessous de...
+-- seuilAlerteBas != NULL && seuilAlerteHaut != NULL : alerte entre ... et ...
+INSERT INTO typeCapteur (libelleType, unite, symbol, seuilAlerteBas, seuilAlerteHaut)
+VALUES ('Température', 'Degré Celsius', '°C', NULL, 35),
+       ('Humidité', 'Pourcentage', '%', NULL, NULL),
+       ('Luminosité', 'Lux', 'lux', NULL, NULL),
+       ('Concentration NO2', 'milligramme par mètre cube', 'µg*m^-3', NULL, 400),
+       ('Concentration O2', 'Parties par million', 'ppm', 190000, NULL),
+       ('Bruit', 'Décibel', 'dB', NULL, 85),
+       ('Particules fines', 'milligramme par mètre cube', 'µg*m^-3', NULL, 125),
+       ('Pression', 'Pascal', 'Pa', NULL, NULL);
 
 INSERT INTO localisation(latitude, longitude, libelle)
 VALUES (45.625536, 5.132806, 'Maison Maxou'),
