@@ -200,36 +200,15 @@ public class MonitoringFrame extends JFrame {
             return;
 
         // {xAxisValues, yAxisValues}
-        double[][] dataSet;
-        boolean isTimestampedChart;
-        if (isTimestampedChart = (xAxisChoice.getSelectedIndex() == 0 || yAxisChoice.getSelectedIndex() == 0))
-            dataSet = bd.getTimestampedDataset(station, selectedXType, selectedYType, xAxisChoice.getSelectedIndex() == 0);
-        else
-            dataSet = bd.getBiQuantityDataset(station, selectedXType, selectedYType);
-
-        if (dataSet != null && dataSet[0] != null && dataSet[1] != null && dataSet[0].length == dataSet[1].length && dataSet[0].length != 0) {
-            chart = QuickChart.getChart("Graphique",
-                                        selectedXType + " (" + getUnitFromTable(selectedXType) + ")",
-                                        selectedYType + " (" + getUnitFromTable(selectedYType) + ")",
-                                        choixStation.getSelectedItem().toString(),
-                                        dataSet[0], dataSet[1]);
-
-            // instanceof juste pour être sûr de pas avoir de crash si on change un truc plus tard
-            if (!isTimestampedChart && chart instanceof XYChart) {
-                XYStyler styler = ((XYChart) chart).getStyler();
-                styler.setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Scatter);
-                chart.getSeriesMap().values().stream().forEach(series -> {
-
-                    if (series instanceof XYSeries) {
-                        XYSeries xySeries = (XYSeries) series;
-
-                        xySeries.setMarker(SeriesMarkers.PLUS);
-                        xySeries.setMarkerColor(Color.blue);
-                    }
-                });
-            }
-
+        DataSet dataset = null;
+        try {
+            dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
+            chart = dataset.makeChart();
             buildChart(false);
+
+        } catch (Exception e) {
+            System.err.println("Impossible de générer un DataSet correct. Le graph n'a pas pu être construit");
+            e.printStackTrace();
         }
     }
 
@@ -364,5 +343,4 @@ public class MonitoringFrame extends JFrame {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() { return mainPanel; }
-
 }
