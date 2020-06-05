@@ -13,13 +13,13 @@ public class LectureBase {
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
-    private PreparedStatement selectLastMesureStatement = null,
-            selectCapteursDuneStationStatement = null,
-            selectAllStationsStatement = null,
-            selectStationFromNomStatement = null,
-            selectGrandeursStationStatement = null,
-            selectAllValuesFromStationOfType = null,
-            selectUnitsAndThresholdsFromDataType = null;
+    private PreparedStatement SELECTLastMesureStatement = null,
+            SELECTCapteursDuneStationStatement = null,
+            SELECTAllStationsStatement = null,
+            SELECTStationFromNomStatement = null,
+            SELECTGrANDeursStationStatement = null,
+            SELECTAllValuesFromStationOfType = null,
+            SELECTUnitsAndThresholdsFromDataType = null;
 
     public void connexionBD() throws Exception {
 
@@ -50,16 +50,48 @@ public class LectureBase {
     public void makeStatements() {
 
         try {
-            this.selectAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
-            this.selectStationFromNomStatement = this.connection.prepareStatement("SELECT idStation FROM station WHERE station.nomStation = ?");
-            this.selectGrandeursStationStatement = this.connection.prepareStatement("SELECT libelleType, symbol FROM typeCapteur, capteur, station WHERE typeCapteur.idTypeCapteur=capteur.idTypeCapteur AND capteur.idStation=station.idStation AND station.idStation=? order by capteur.idTypeCapteur");
+            this.SELECTAllStationsStatement = this.connection.prepareStatement("SELECT nomStation FROM station");
+            this.SELECTStationFromNomStatement = this.connection.prepareStatement(
+                    "SELECT idStation FROM station " +
+                            "WHERE station.nomStation = ?");
+            this.SELECTGrANDeursStationStatement = this.connection.prepareStatement(
+                    "SELECT libelleType, symbol " +
+                            "FROM typeCapteur, capteur, station " +
+                            "WHERE typeCapteur.idTypeCapteur=capteur.idTypeCapteur " +
+                            "AND capteur.idStation=station.idStation " +
+                            "AND station.idStation=? " +
+                            "ORDER BY capteur.idTypeCapteur");
 
             // FIXME trouver un truc plus propre que cette horreur de 2000 caractères
-            this.selectLastMesureStatement = this.connection.prepareStatement("SELECT dateMesure, valeur FROM mesure, capteur WHERE dateMesure = (select MAX(dateMesure) from mesure, capteur where capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ?) and capteur.idCapteur = mesure.idCapteur and capteur.idStation = ? and capteur.idTypeCapteur = ? order by capteur.idTypeCapteur;");
+            this.SELECTLastMesureStatement = this.connection.prepareStatement(
+                    "SELECT dateMesure, valeur " +
+                            "FROM mesure, capteur " +
+                            "WHERE dateMesure = (" +
+                                "SELECT MAX(dateMesure) " +
+                                "FROM mesure, capteur " +
+                                "WHERE capteur.idCapteur = mesure.idCapteur " +
+                                "AND capteur.idStation = ? AND capteur.idTypeCapteur = ?) " +
+                            "AND capteur.idCapteur = mesure.idCapteur " +
+                            "AND capteur.idStation = ? " +
+                            "AND capteur.idTypeCapteur = ? " +
+                            "ORDER BY capteur.idTypeCapteur;");
 
-            this.selectCapteursDuneStationStatement = this.connection.prepareStatement("select idCapteur,idTypeCapteur from capteur where idStation = ? order by idTypeCapteur;");
-            this.selectAllValuesFromStationOfType = this.connection.prepareStatement("select dateMesure, valeur from mesure, station, capteur, typeCapteur where station.nomStation = ? and typeCapteur.libelleType = ? and capteur.idTypeCapteur = typeCapteur.idTypeCapteur and station.idStation = capteur.idStation and mesure.idCapteur = capteur.idCapteur order by dateMesure;");
-            this.selectUnitsAndThresholdsFromDataType = this.connection.prepareStatement("select symbol, seuilAlerteBas, seuilAlerteHaut from typecapteur where libelleType = ?");
+            this.SELECTCapteursDuneStationStatement = this.connection.prepareStatement(
+                    "SELECT idCapteur,idTypeCapteur " +
+                            "FROM capteur WHERE idStation = ? " +
+                            "ORDER BY idTypeCapteur;");
+            this.SELECTAllValuesFromStationOfType = this.connection.prepareStatement(
+                    "SELECT dateMesure, valeur " +
+                            "FROM mesure, station, capteur, typeCapteur " +
+                            "WHERE station.nomStation = ? AND typeCapteur.libelleType = ? " +
+                            "AND capteur.idTypeCapteur = typeCapteur.idTypeCapteur " +
+                            "AND station.idStation = capteur.idStation " +
+                            "AND mesure.idCapteur = capteur.idCapteur " +
+                            "ORDER BY dateMesure;");
+
+            this.SELECTUnitsAndThresholdsFromDataType = this.connection.prepareStatement("" +
+                    "SELECT symbol, seuilAlerteBas, seuilAlerteHaut " +
+                    "FROM typeCapteur WHERE libelleType = ?");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -70,8 +102,8 @@ public class LectureBase {
 
         try {
 
-            this.selectStationFromNomStatement.setString(1, nomStation);
-            ResultSet stations = this.selectStationFromNomStatement.executeQuery();
+            this.SELECTStationFromNomStatement.setString(1, nomStation);
+            ResultSet stations = this.SELECTStationFromNomStatement.executeQuery();
             stations.next();
 
             return stations.getInt("idStation");
@@ -86,7 +118,7 @@ public class LectureBase {
 
         try {
             // À compléter
-            ResultSet rs = selectAllStationsStatement.executeQuery();
+            ResultSet rs = SELECTAllStationsStatement.executeQuery();
             ArrayList<String> noms = new ArrayList();
             while (rs.next()) {
                 noms.add(rs.getString("nomStation"));
@@ -102,18 +134,18 @@ public class LectureBase {
 
     public ArrayList<String> grandeurStations(String nomStation) throws Exception {
         try {
-            this.selectGrandeursStationStatement.setInt(1, getIdStation(nomStation));
-            ResultSet rs = selectGrandeursStationStatement.executeQuery();
-            ArrayList<String> grandeurs = new ArrayList();
+            this.SELECTGrANDeursStationStatement.setInt(1, getIdStation(nomStation));
+            ResultSet rs = SELECTGrANDeursStationStatement.executeQuery();
+            ArrayList<String> grANDeurs = new ArrayList();
 
             while (rs.next())
-                grandeurs.add(rs.getString("libelleType") + "|" + rs.getString("symbol"));
+                grANDeurs.add(rs.getString("libelleType") + "|" + rs.getString("symbol"));
 
-            return grandeurs;
+            return grANDeurs;
 
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
-            throw new Exception("Erreur dans la récupération des grandeurs de la station");
+            throw new Exception("Erreur dans la récupération des grANDeurs de la station");
         }
     }
 
@@ -121,10 +153,10 @@ public class LectureBase {
 
         LinkedHashMap<Long, Double> values = new LinkedHashMap<>();
         try {
-            this.selectAllValuesFromStationOfType.setString(1, nomStation);
-            this.selectAllValuesFromStationOfType.setString(2, type);
+            this.SELECTAllValuesFromStationOfType.setString(1, nomStation);
+            this.SELECTAllValuesFromStationOfType.setString(2, type);
 
-            ResultSet results = this.selectAllValuesFromStationOfType.executeQuery();
+            ResultSet results = this.SELECTAllValuesFromStationOfType.executeQuery();
 
             while (results.next())
                 values.put(results.getTimestamp("dateMesure").getTime(), results.getDouble("valeur"));
@@ -145,18 +177,18 @@ public class LectureBase {
 
         try {
 
-            this.selectCapteursDuneStationStatement.setInt(1, idStation);
-            ResultSet capteurs = this.selectCapteursDuneStationStatement.executeQuery();
+            this.SELECTCapteursDuneStationStatement.setInt(1, idStation);
+            ResultSet capteurs = this.SELECTCapteursDuneStationStatement.executeQuery();
 
             ArrayList<Double> values = new ArrayList<>();
 
             while (capteurs.next()) {
 
-                selectLastMesureStatement.setInt(1, idStation);
-                selectLastMesureStatement.setInt(3, idStation);
-                selectLastMesureStatement.setInt(2, capteurs.getInt("idTypeCapteur"));
-                selectLastMesureStatement.setInt(4, capteurs.getInt("idTypeCapteur"));
-                ResultSet rs = selectLastMesureStatement.executeQuery();
+                SELECTLastMesureStatement.setInt(1, idStation);
+                SELECTLastMesureStatement.setInt(3, idStation);
+                SELECTLastMesureStatement.setInt(2, capteurs.getInt("idTypeCapteur"));
+                SELECTLastMesureStatement.setInt(4, capteurs.getInt("idTypeCapteur"));
+                ResultSet rs = SELECTLastMesureStatement.executeQuery();
 
                 while (rs.next())
                     values.add(rs.getDouble("valeur"));
@@ -169,13 +201,13 @@ public class LectureBase {
         }
     }
 
-    public double[][] getTimestampedDataset(String stationName, String selectedTypeX, String selectedTypeY, boolean xIsTimeAxis) {
+    public double[][] getTimestampedDataset(String stationName, String SELECTedTypeX, String SELECTedTypeY, boolean xIsTimeAxis) {
 
-        String selectedType = xIsTimeAxis ? selectedTypeY : selectedTypeX;
+        String SELECTedType = xIsTimeAxis ? SELECTedTypeY : SELECTedTypeX;
 
         Map<Long, Double> valuesMap;
         try {
-            valuesMap = getValuesFromStationOfType(stationName, selectedType);
+            valuesMap = getValuesFromStationOfType(stationName, SELECTedType);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -190,15 +222,15 @@ public class LectureBase {
         timeValues = valuesMap.keySet().stream().mapToDouble(Double::valueOf).toArray();
         dataValues = valuesMap.values().stream().mapToDouble(Double::valueOf).toArray();
 
-        return new double[][] { xIsTimeAxis ? timeValues : dataValues, xIsTimeAxis ? dataValues : timeValues };
+        return new double[][]{xIsTimeAxis ? timeValues : dataValues, xIsTimeAxis ? dataValues : timeValues};
     }
 
-    public double[][] getBiQuantityDataset(String stationName, String selectedTypeX, String selectedTypeY) {
+    public double[][] getBiQuantityDataset(String stationName, String SELECTedTypeX, String SELECTedTypeY) {
 
         LinkedHashMap<Long, Double> valuesMapX, valuesMapY;
         try {
-            valuesMapX = getValuesFromStationOfType(stationName, selectedTypeX);
-            valuesMapY = getValuesFromStationOfType(stationName, selectedTypeY);
+            valuesMapX = getValuesFromStationOfType(stationName, SELECTedTypeX);
+            valuesMapY = getValuesFromStationOfType(stationName, SELECTedTypeY);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -230,10 +262,10 @@ public class LectureBase {
     public Object[] getDataTypeInfo(String dataTypeName) {
 
         try {
-            this.selectUnitsAndThresholdsFromDataType.setString(1, dataTypeName);
-            ResultSet set = this.selectUnitsAndThresholdsFromDataType.executeQuery();
+            this.SELECTUnitsAndThresholdsFromDataType.setString(1, dataTypeName);
+            ResultSet set = this.SELECTUnitsAndThresholdsFromDataType.executeQuery();
             set.next();
-            return new Object[] { set.getString("symbol"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut") };
+            return new Object[]{set.getString("symbol"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut")};
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
