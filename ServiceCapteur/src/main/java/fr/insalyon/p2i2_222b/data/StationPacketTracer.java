@@ -1,27 +1,26 @@
 package fr.insalyon.p2i2_222b.data;
 
+import fr.insalyon.p2i2_222b.Main;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
 
 public class StationPacketTracer extends DataSource {
 
-    protected final int udpListeningPort;
-    protected final int udpSendingPort;
-
-    protected Thread readingThread;
-    protected Thread handlerThread;
-    protected boolean readingThreadRunning;
-    protected boolean handlerThreadRunning;
-
-    protected DatagramSocket serverSocket;
-    protected BlockingQueue<String> bufferQueue;
-
-    protected InetAddress localhostIpAddress;
+    private final int udpListeningPort;
+    private final int udpSendingPort;
+    private final DatagramSocket serverSocket;
+    private final BlockingQueue<String> transferQueue;
+    private final InetAddress localhostIpAddress;
+    private Thread readingThread;
+    private Thread handlerThread;
+    private boolean readingThreadRunning;
+    private boolean handlerThreadRunning;
 
     public StationPacketTracer(int udpListeningPort, int udpSendingPort) throws IOException {
         this.udpListeningPort = udpListeningPort;
@@ -31,105 +30,89 @@ public class StationPacketTracer extends DataSource {
 
         this.localhostIpAddress = InetAddress.getByName("127.0.0.1"); // localhost
         this.serverSocket = new DatagramSocket(udpListeningPort);
+        this.transferQueue = new LinkedTransferQueue<>();
     }
 
     public final void start() {
 
-        this.bufferQueue = new LinkedBlockingQueue<>();
+        handlerThread = new Thread(() -> {
 
-        this.handlerThread = new Thread(() -> {
+            handlerThreadRunning = true;
 
-            this.handlerThreadRunning = true;
-
-            String queueData;
-
-            while (this.handlerThreadRunning) {
+            while (handlerThreadRunning) {
                 try {
-                    queueData = this.bufferQueue.take();
-                    this.dataHandler.accept(queueData.split(":"));
-                } catch (InterruptedException ex) {
-                    // Ignore...
-                }
+                    dataHandler.accept(transferQueue.take().split(":"));
+                } catch (InterruptedException ignored) { }
             }
 
-            this.handlerThreadRunning = false;
+            handlerThreadRunning = false;
         });
 
         // Creation d'une tache qui va s'exécuter en parallèle du code séquentiel du main
-        this.readingThread = new Thread(() -> {
+        readingThread = new Thread(() -> {
 
-            this.readingThreadRunning = true;
+            readingThreadRunning = true;
 
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
             try {
-                while (this.readingThreadRunning) {
-                    this.serverSocket.receive(receivePacket);
-                    InetAddress ipAddress = receivePacket.getAddress();
-                    int port = receivePacket.getPort();
+                while (readingThreadRunning) {
+                    serverSocket.receive(receivePacket);
                     String message = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength(), StandardCharsets.UTF_8);
-                    //System.out.println("RECEIVED from " + ipAddress.getHostAddress() + ":" + port + " >> " + message);
 
                     try {
-                        this.bufferQueue.put(message);
-                    } catch (InterruptedException ex) {
-                        // Ignore...
-                    }
+                        transferQueue.put(message);
+                    } catch (InterruptedException ignored) { }
                 }
 
             } catch (IOException ex) {
-                if (this.readingThreadRunning) {
-                    ex.printStackTrace(System.err);
+                if (readingThreadRunning) {
+                    Main.console.err(ex);
                 }
             }
 
-            this.readingThreadRunning = false;
+            readingThreadRunning = false;
         });
 
-        this.handlerThread.start();
-        this.readingThread.start();
+        handlerThread.start();
+        readingThread.start();
     }
 
     @Override
     public final void close() {
 
-        this.readingThreadRunning = false;
+        readingThreadRunning = false;
 
-        this.serverSocket.close();
+        serverSocket.close();
 
-        if (this.readingThread != null) {
+        if (readingThread != null) {
             //Ordre d'interruption de la transmission en entrée
-            this.readingThread.interrupt();
+            readingThread.interrupt();
             try {
                 //attente de la fin du thread (au plus 1000 ms)
-                this.readingThread.join(1000);
+                readingThread.join(1000);
             } catch (InterruptedException ex) {
-                // Ignore
-                ex.printStackTrace(System.err);
+                Main.console.err(ex);
             }
         }
 
-        this.handlerThreadRunning = false;
+        handlerThreadRunning = false;
 
-        if (this.handlerThread != null) {
+        if (handlerThread != null) {
             //Ordre d'interruption de la transmission en entrée
-            this.handlerThread.interrupt();
+            handlerThread.interrupt();
             try {
                 //attente de la fin du thread (au plus 1000 ms)
-                this.handlerThread.join(1000);
+                handlerThread.join(1000);
             } catch (InterruptedException ex) {
-                // Ignore
-                ex.printStackTrace(System.err);
+                Main.console.err(ex);
             }
         }
     }
 
-    /*
     public void write(String line) throws IOException {
         byte[] data = line.getBytes(StandardCharsets.UTF_8);
-        this.serverSocket.send(new DatagramPacket(data, data.length, this.localhostIpAddress, this.udpSendingPort));
+        serverSocket.send(new DatagramPacket(data, data.length, localhostIpAddress, udpSendingPort));
     }
-
-     */
 }
