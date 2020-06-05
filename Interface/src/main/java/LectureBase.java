@@ -17,7 +17,7 @@ public class LectureBase {
             SELECTCapteursDuneStationStatement = null,
             SELECTAllStationsStatement = null,
             SELECTStationFromNomStatement = null,
-            SELECTGrANDeursStationStatement = null,
+            SELECTgrandeursStationStatement = null,
             SELECTAllValuesFromStationOfType = null,
             SELECTUnitsAndThresholdsFromDataType = null;
 
@@ -54,7 +54,7 @@ public class LectureBase {
             this.SELECTStationFromNomStatement = this.connection.prepareStatement(
                     "SELECT idStation FROM station " +
                             "WHERE station.nomStation = ?");
-            this.SELECTGrANDeursStationStatement = this.connection.prepareStatement(
+            this.SELECTgrandeursStationStatement = this.connection.prepareStatement(
                     "SELECT libelleType, symbol " +
                             "FROM typeCapteur, capteur, station " +
                             "WHERE typeCapteur.idTypeCapteur=capteur.idTypeCapteur " +
@@ -134,18 +134,18 @@ public class LectureBase {
 
     public ArrayList<String> grandeurStations(String nomStation) throws Exception {
         try {
-            this.SELECTGrANDeursStationStatement.setInt(1, getIdStation(nomStation));
-            ResultSet rs = SELECTGrANDeursStationStatement.executeQuery();
-            ArrayList<String> grANDeurs = new ArrayList();
+            this.SELECTgrandeursStationStatement.setInt(1, getIdStation(nomStation));
+            ResultSet rs = SELECTgrandeursStationStatement.executeQuery();
+            ArrayList<String> grandeurs = new ArrayList();
 
             while (rs.next())
-                grANDeurs.add(rs.getString("libelleType") + "|" + rs.getString("symbol"));
+                grandeurs.add(rs.getString("libelleType") + "|" + rs.getString("symbol"));
 
-            return grANDeurs;
+            return grandeurs;
 
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
-            throw new Exception("Erreur dans la récupération des grANDeurs de la station");
+            throw new Exception("Erreur dans la récupération des grandeurs de la station");
         }
     }
 

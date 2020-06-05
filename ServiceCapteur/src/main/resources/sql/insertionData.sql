@@ -11,13 +11,13 @@ DELETE FROM typeCapteur;
 -- seuilAlerteBas != NULL && seuilAlerteHaut == NULL : alerte en dessous de...
 -- seuilAlerteBas != NULL && seuilAlerteHaut != NULL : alerte entre ... et ...
 INSERT INTO typeCapteur (libelleType, unite, symbol, seuilAlerteBas, seuilAlerteHaut)
-VALUES ('Température', 'Degré Celsius', '°C', NULL, 35),
+VALUES ('Température', 'Degré Celsius', '°C', NULL, 20),
        ('Humidité', 'Pourcentage', '%', NULL, NULL),
-       ('Luminosité', 'Lux', 'lux', NULL, NULL),
-       ('Concentration NO2', 'milligramme par mètre cube', 'µg*m^-3', NULL, 400),
+       ('Luminosité', 'Lux', 'lux', NULL, 80),
+       ('Concentration NO2', 'milligramme par mètre cube', 'µg*m^-3', NULL, 500),
        ('Concentration O2', 'Parties par million', 'ppm', 190000, NULL),
        ('Bruit', 'Décibel', 'dB', NULL, 85),
-       ('Particules fines', 'milligramme par mètre cube', 'µg*m^-3', NULL, 125),
+       ('Particules fines', 'milligramme par mètre cube', 'µg*m^-3', NULL, 140),
        ('Pression', 'Pascal', 'Pa', NULL, NULL);
 
 INSERT INTO localisation(latitude, longitude, libelle)
