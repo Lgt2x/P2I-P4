@@ -137,8 +137,8 @@ public class MonitoringFrame extends JFrame {
         Object previousChoiceXAxis = xAxisChoice.getSelectedItem();
         Object previousChoiceYAxis = yAxisChoice.getSelectedItem();
         xAxisChoice.removeAllItems();
-        xAxisChoice.addItem("Temps");
         yAxisChoice.removeAllItems();
+        xAxisChoice.addItem("Temps");
 
         for (int i = 0; i < values.size(); ++i) {
 
@@ -154,13 +154,10 @@ public class MonitoringFrame extends JFrame {
 
         xAxisChoice.setSelectedItem(previousChoiceXAxis);
 
-        if (previousChoiceXAxis == null)
-            yAxisChoice.setSelectedIndex(0);
-        else
+        if (previousChoiceYAxis != null)
             yAxisChoice.setSelectedItem(previousChoiceYAxis);
-
-        if (yAxisChoice.getSelectedIndex() == 0 && xAxisChoice.getSelectedIndex() == 0)
-            yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
+        else
+            yAxisChoice.setSelectedIndex(0);
 
         tableValeursStation.setModel(tableModel);
 

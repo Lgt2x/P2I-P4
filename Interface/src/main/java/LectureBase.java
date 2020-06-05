@@ -259,6 +259,7 @@ public class LectureBase {
             LinkedHashMap<Long, Double> otherMap = tooMuchInfoMap == valuesMapX ? valuesMapY : valuesMapX;
 
             Iterator<Map.Entry<Long, Double>> iterator = tooMuchInfoMap.entrySet().iterator();
+            iterator.next();
             while (tooMuchInfoMap.size() > otherMap.size()) {
                 iterator.remove();
                 iterator.next();
