@@ -1,21 +1,25 @@
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class LectureBase {
 
+    private static final boolean useH2 = false;
     private final String serveurBD = "localhost";
     private final String portBD = "3306";
     private final String nomBD = "P2I2P4";
     private final String loginBD = "root";
     private final String motdepasseBD = "root";
     private Connection connection = null;
-    private PreparedStatement   selectLastMesureStatement = null,
-                                selectCapteursDuneStationStatement = null,
-                                selectAllStationsStatement = null,
-                                selectStationFromNomStatement = null,
-                                selectGrandeursStationStatement = null,
-                                selectAllValuesFromStationOfType = null,
-                                selectUnitsAndThresholdsFromDataType = null;
+    private PreparedStatement selectLastMesureStatement = null,
+            selectCapteursDuneStationStatement = null,
+            selectAllStationsStatement = null,
+            selectStationFromNomStatement = null,
+            selectGrandeursStationStatement = null,
+            selectAllValuesFromStationOfType = null,
+            selectUnitsAndThresholdsFromDataType = null;
 
     public void connexionBD() throws Exception {
 
@@ -31,6 +35,9 @@ public class LectureBase {
             this.connection = DriverManager.getConnection(urlJDBC, this.loginBD, this.motdepasseBD);
 
             System.out.println("Connexion établie...");
+
+            if (useH2)
+                connection.createStatement().execute("use p2i2p4;");
 
             makeStatements();
 
@@ -133,6 +140,7 @@ public class LectureBase {
 
         return derniereMesure(getIdStation(nomStation));
     }
+
     public ArrayList<Double> derniereMesure(int idStation) throws Exception {
 
         try {
@@ -205,8 +213,8 @@ public class LectureBase {
             LinkedHashMap<Long, Double> tooMuchInfoMap = valuesMapX.size() > valuesMapY.size() ? valuesMapX : valuesMapY;
             LinkedHashMap<Long, Double> otherMap = tooMuchInfoMap == valuesMapX ? valuesMapY : valuesMapX;
 
-            Iterator iterator = tooMuchInfoMap.entrySet().iterator();
-            while(tooMuchInfoMap.size() > otherMap.size()) {
+            Iterator<Map.Entry<Long, Double>> iterator = tooMuchInfoMap.entrySet().iterator();
+            while (tooMuchInfoMap.size() > otherMap.size()) {
                 iterator.remove();
                 iterator.next();
             }
@@ -224,10 +232,9 @@ public class LectureBase {
         try {
             this.selectUnitsAndThresholdsFromDataType.setString(1, dataTypeName);
             ResultSet set = this.selectUnitsAndThresholdsFromDataType.executeQuery();
-            return new Object[] {set.getString("unite"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut")};
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            return new Object[] { set.getString("unite"), set.getInt("seuilAlerteBas"), set.getInt("seuilAlerteHaut") };
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return null;
@@ -235,6 +242,9 @@ public class LectureBase {
 
     public String getDatabaseUrl() {
 
-        return "jdbc:mysql://" + this.serveurBD + ":" + this.portBD + "/" + this.nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
+        if (useH2)
+            return "jdbc:h2:tcp://localhost:9123/../db/" + nomBD;
+        else
+            return "jdbc:mysql://" + serveurBD + ":" + portBD + "/" + nomBD + "?zeroDateTimeBehavior=convertToNull&serverTimezone=Europe/Paris";
     }
 }

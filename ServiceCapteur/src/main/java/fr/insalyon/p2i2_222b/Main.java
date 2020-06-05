@@ -5,6 +5,7 @@ import fr.insalyon.p2i2_222b.data.StationFaker;
 import fr.insalyon.p2i2_222b.data.StationPacketTracer;
 import fr.insalyon.p2i2_222b.sql.DBManager;
 import fr.insalyon.p2i2_222b.util.Console;
+import org.h2.tools.Server;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -23,6 +24,7 @@ public class Main {
     public static Console console = new Console();
     private static DBManager db;
     private static DataSource arduino;
+    private static Server h2server;
 
     public static void main(String[] args) {
 
@@ -30,9 +32,11 @@ public class Main {
 
         try {
             // Le premier permet l'utilisation de mysql, le second utilise une bdd intégrée
-            if (useH2)
-                db = new DBManager("jdbc:h2:./../db/test");
-            else
+            if (useH2) {
+                h2server = Server.createTcpServer("-tcpPort", "9123", "-tcpAllowOthers", "-tcpDaemon", "-baseDir", "./../db", "-ifNotExists");
+                h2server.start();
+                db = new DBManager("jdbc:h2:tcp://localhost:9123/../db/P2I2P4");
+            } else
                 db = new DBManager("mysql");
 
             if (fakeData)
