@@ -48,6 +48,9 @@ public abstract class DataSet {
         double[] thresholdHeight = new double[] {threshold, threshold};
         double[] thresholdWidth = new double[] { Arrays.stream(otherDataValues).min().getAsDouble(), Arrays.stream(otherDataValues).max().getAsDouble() };
 
-        chart.getSeriesMap().put(seriesName, new XYSeries(seriesName, thresholdOnX ? thresholdHeight : thresholdWidth, thresholdOnX ? thresholdWidth : thresholdHeight, null, Series.DataType.Number));
+        XYSeries series = new XYSeries(seriesName, thresholdOnX ? thresholdHeight : thresholdWidth, thresholdOnX ? thresholdWidth : thresholdHeight, null, Series.DataType.Number);
+        series.setXYSeriesRenderStyle(XYSeriesRenderStyle.Line);
+
+        chart.getSeriesMap().put(seriesName, series);
     }
 }

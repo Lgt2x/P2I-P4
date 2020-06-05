@@ -56,6 +56,11 @@ public class BiQuantityDataSet extends DataSet {
             }
         });
 
+        makeXYThreshold(chart, dataset[1], lowerThresholds[0], "bas", typeX);
+        makeXYThreshold(chart, dataset[0], lowerThresholds[1], "bas", typeY);
+        makeXYThreshold(chart, dataset[1], higherThresholds[0], "haut", typeX);
+        makeXYThreshold(chart, dataset[0], higherThresholds[1], "haut", typeY);
+
         return chart;
     }
 }
