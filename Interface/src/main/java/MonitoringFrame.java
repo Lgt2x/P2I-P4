@@ -4,7 +4,9 @@ import com.intellij.uiDesigner.core.Spacer;
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
+import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.internal.chartpart.Chart;
+import org.knowm.xchart.internal.series.Series;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -13,6 +15,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public class MonitoringFrame extends JFrame {
 
@@ -207,6 +210,38 @@ public class MonitoringFrame extends JFrame {
         try {
             dataset = DataSet.buildDataSet(bd, station, selectedXType, selectedYType);
             chart = dataset.makeChart();
+
+            // Détection du dépassement des seuils alertes
+
+            Map seriesMap = chart.getSeriesMap();
+
+            XYSeries dataSeries = null;
+            ArrayList<XYSeries> thresholds = new ArrayList<>();
+            for (Object obj : seriesMap.keySet()) {
+                XYSeries series = (XYSeries) seriesMap.get(obj);
+                if (series.getName().contains("Seuil"))
+                    thresholds.add(series);
+                else
+                    dataSeries = series;
+            }
+
+            if (dataSeries == null) {
+                return;
+            }
+
+            for (XYSeries threshold : thresholds) {
+
+                String thresholdName = threshold.getName();
+                double[] data = dataset.dataset[thresholdName.contains("x") ? 0 : 1];
+                double thresholdValue = (threshold.getXMax() == threshold.getXMin()) ? threshold.getXMax() : threshold.getYMax();
+
+                if (thresholdName.contains("bas") && data[data.length - 1] < thresholdValue)
+                    System.out.println("en dessous du threshold : " + thresholdName);
+                else if (thresholdName.contains("haut") && data[data.length - 1] > thresholdValue)
+                    System.out.println("au dessus du threshold : " + thresholdName);
+
+                // TODO : actions quand thresholds dépassés !
+            }
 
         } catch (Exception e) {
             System.err.println("Impossible de générer un DataSet correct. Le graph n'a pas pu être construit");
