@@ -1,10 +1,12 @@
 USE P2I2P4;
 
-DELETE FROM capteur;
-DELETE FROM installation;
-DELETE FROM station;
-DELETE FROM localisation;
-DELETE FROM typeCapteur;
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE installation;
+TRUNCATE TABLE localisation;
+TRUNCATE TABLE mesure;
+TRUNCATE TABLE capteur;
+TRUNCATE TABLE typeCapteur;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- seuilAlerteBas == NULL && seuilAlerteHaut == NULL : pas d'alerte
 -- seuilAlerteBas == NULL && seuilAlerteHaut != NULL : alerte au dessus de...
