@@ -139,7 +139,6 @@ public class MonitoringFrame extends JFrame {
         xAxisChoice.removeAllItems();
         xAxisChoice.addItem("Temps");
         yAxisChoice.removeAllItems();
-        yAxisChoice.addItem("Temps");
 
         for (int i = 0; i < values.size(); ++i) {
 
@@ -155,7 +154,10 @@ public class MonitoringFrame extends JFrame {
 
         xAxisChoice.setSelectedItem(previousChoiceXAxis);
 
-        yAxisChoice.setSelectedItem(previousChoiceYAxis);
+        if (previousChoiceXAxis == null)
+            yAxisChoice.setSelectedIndex(0);
+        else
+            yAxisChoice.setSelectedItem(previousChoiceYAxis);
 
         if (yAxisChoice.getSelectedIndex() == 0 && xAxisChoice.getSelectedIndex() == 0)
             yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
