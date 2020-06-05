@@ -163,7 +163,7 @@ public class MonitoringFrame extends JFrame {
 
         yAxisChoice.setSelectedItem(previousChoiceYAxis);
         if (yAxisChoice.getSelectedItem() == null)
-            yAxisChoice.setSelectedIndex(0);
+            yAxisChoice.setSelectedIndex(yAxisChoice.getItemCount() > 1 ? 1 : 0);
 
         tableValeursStation.setModel(tableModel);
 
