@@ -5,6 +5,8 @@ import org.knowm.xchart.internal.chartpart.Chart;
 import org.knowm.xchart.style.colors.XChartSeriesColors;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 public class TimestampedDataSet extends DataSet {
 
@@ -50,16 +52,11 @@ public class TimestampedDataSet extends DataSet {
         chart.getStyler().setLocale(Locale.FRANCE);
 
         List<Date> xData = new ArrayList<>();
-        List<Double> yData = new ArrayList<>();
 
-        for(double val : dataset[0]){
+        for(double val : dataset[0])
             xData.add(new Date((long) val));
-        }
-        for(double val : dataset[1]){
-            yData.add(val);
-        }
 
-        XYSeries series = chart.addSeries("Fake Data", xData , yData);
+        XYSeries series = chart.addSeries("Fake Data", xData , DoubleStream.of(dataset[1]).boxed().collect(Collectors.toList()));
         series.setXYSeriesRenderStyle(graphType);
         series.setLineColor(XChartSeriesColors.BLUE);
 
