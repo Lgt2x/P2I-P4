@@ -1,10 +1,10 @@
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.XYSeries;
-import org.knowm.xchart.internal.chartpart.Chart;
 import org.knowm.xchart.style.colors.XChartSeriesColors;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
@@ -21,7 +21,7 @@ public class TimestampedDataSet extends DataSet {
 
         Object[] dataInfos = source.getDataTypeInfo(isXTime ? typeY : typeX);
 
-        if(dataInfos == null)
+        if (dataInfos == null)
             throw new Exception("Erreur construction du dataset, la DB n'a pas renvoyé un résultat correct");
 
         int timeIndex = 0;
@@ -41,22 +41,27 @@ public class TimestampedDataSet extends DataSet {
     }
 
     @Override
-    public Chart makeChart() {
+    public XYChart makeChart() {
 
         if (dataset == null || dataset[0] == null || dataset[1] == null || dataset[0].length != dataset[1].length || dataset[0].length == 0)
             return null;
 
-        XYChart chart = new XYChartBuilder().title("Graphique").xAxisTitle(typeX + " (" + units[0] + ")").yAxisTitle(typeY + " (" + units[1] + ")").build();
+        XYChart chart = new XYChartBuilder()
+                                .title("Graphique")
+                                .xAxisTitle(typeX + " (" + units[0] + ")")
+                                .yAxisTitle(typeY + " (" + units[1] + ")")
+                                .build();
 
         chart.getStyler().setDatePattern("dd-MMM HH:mm");
         chart.getStyler().setLocale(Locale.FRANCE);
 
-        List<Date> xData = new ArrayList<>();
-
-        for(double val : dataset[0])
-            xData.add(new Date((long) val));
-
-        XYSeries series = chart.addSeries("Fake Data", xData , DoubleStream.of(dataset[1]).boxed().collect(Collectors.toList()));
+        XYSeries series = chart.addSeries("Fake Data",
+                DoubleStream.of(dataset[0])
+                        .mapToObj(val -> new Date((long) val))
+                        .collect(Collectors.toList()),
+                DoubleStream.of(dataset[1])
+                        .boxed()
+                        .collect(Collectors.toList()));
         series.setXYSeriesRenderStyle(graphType);
         series.setLineColor(XChartSeriesColors.BLUE);
 
@@ -65,7 +70,6 @@ public class TimestampedDataSet extends DataSet {
         makeXYThreshold(chart, dataset[0], lowerThresholds[1], "bas", typeY, true);
         makeXYThreshold(chart, dataset[1], higherThresholds[0], "haut", typeX);
         makeXYThreshold(chart, dataset[0], higherThresholds[1], "haut", typeY, true);
-
 
         return chart;
     }

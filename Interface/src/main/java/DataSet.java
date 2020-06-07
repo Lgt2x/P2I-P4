@@ -2,7 +2,6 @@ import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
 import org.knowm.xchart.internal.chartpart.Chart;
-import org.knowm.xchart.internal.series.Series;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -29,8 +28,6 @@ public abstract class DataSet {
         this.stationName = stationName;
     }
 
-    public abstract Chart makeChart();
-
     public static DataSet buildDataSet(LectureBase bd, String stationName, String typeX, String typeY) throws Exception {
 
         if (typeX.equalsIgnoreCase("Temps") || typeY.equalsIgnoreCase("Temps"))
@@ -38,6 +35,8 @@ public abstract class DataSet {
         else
             return new BiQuantityDataSet(bd, stationName, typeX, typeY);
     }
+
+    public abstract XYChart makeChart();
 
     protected void makeXYThreshold(XYChart chart, double[] otherDataValues, Integer threshold, String thresholdType, String typeName, boolean isXTime) {
 
@@ -47,16 +46,16 @@ public abstract class DataSet {
         boolean thresholdOnX = typeName.equalsIgnoreCase(typeX);
 
         String seriesName = "Seuil " + thresholdType + " de " + threshold + units[thresholdOnX ? 0 : 1];
-        double[] thresholdHeight = new double[] {(double)threshold, (double)threshold};
+        double[] thresholdHeight = new double[] { (double) threshold, (double) threshold };
         double[] thresholdWidth = new double[] { Arrays.stream(otherDataValues).min().getAsDouble(), Arrays.stream(otherDataValues).max().getAsDouble() };
 
         XYSeries series;
 
-        if(isXTime){
-            List<Date> thresholdWidthDate = List.of(new Date((long)thresholdWidth[0]), new Date((long)thresholdWidth[1]));
+        if (isXTime) {
+            List<Date> thresholdWidthDate = List.of(new Date((long) thresholdWidth[0]), new Date((long) thresholdWidth[1]));
             List<Double> thresholdHeightDouble = List.of(thresholdHeight[0], thresholdHeight[1]);
             series = chart.addSeries(seriesName, thresholdWidthDate, thresholdHeightDouble);
-        } else{
+        } else {
             series = chart.addSeries(seriesName, thresholdOnX ? thresholdHeight : thresholdWidth, thresholdOnX ? thresholdWidth : thresholdHeight);
         }
 
