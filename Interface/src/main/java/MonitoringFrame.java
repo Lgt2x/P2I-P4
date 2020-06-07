@@ -98,12 +98,10 @@ public class MonitoringFrame extends JFrame {
 
     public void recupNomsStations() throws Exception {
 
-        ArrayList<String> resultat = bd.nomsStations();
-
         choixStation.removeAllItems();
 
-        for (int i = 0; i < resultat.size(); i++)
-            choixStation.addItem(resultat.get(i));
+        for (String station : bd.nomsStations())
+            choixStation.addItem(station);
 
         choixStation.setSelectedIndex(0);
     }
