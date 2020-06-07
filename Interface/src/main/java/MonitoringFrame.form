@@ -140,6 +140,7 @@
                         <constraints/>
                         <properties>
                           <autoResizeMode value="4"/>
+                          <autoscrolls value="true"/>
                           <preferredScrollableViewportSize width="225" height="300"/>
                         </properties>
                       </component>

@@ -92,8 +92,6 @@ public class MonitoringFrame extends JFrame {
         recupNomsStations();
         majMesures(0);
         buildChart(true);
-
-        splitPane.setDividerLocation(-1);
     }
 
     public void recupNomsStations() throws Exception {
@@ -161,11 +159,6 @@ public class MonitoringFrame extends JFrame {
             yAxisChoice.setSelectedIndex(0);
 
         tableValeursStation.setModel(tableModel);
-
-        // On essaye de redimensionner la SplitPane
-        int location = splitPane.getDividerLocation();
-        if (location < tableValeursStation.getWidth() || location < choixStation.getWidth())
-            splitPane.setDividerLocation(-1);
     }
 
     public void buildChart(boolean resetChart) {
