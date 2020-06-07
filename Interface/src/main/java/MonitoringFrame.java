@@ -48,7 +48,7 @@ public class MonitoringFrame extends JFrame {
 
     public MonitoringFrame() throws Exception {
 
-        super("Monitoring de stations");
+        super("Visualisation des données");
 
         setResizable(true);
         setSize(1000, 700);
@@ -146,7 +146,7 @@ public class MonitoringFrame extends JFrame {
             // "temperature|°C" => ["temperature", "°C"]
             String[] strSplit = grandeurs.get(i).split("\\|");
             tableModel.setValueAt(strSplit[0], i, 0);
-            tableModel.setValueAt(values.get(i), i, 1);
+            tableModel.setValueAt(Math.round(values.get(i)*10.0)/10.0, i, 1);
             tableModel.setValueAt(strSplit[1], i, 2);
 
             xAxisChoice.addItem(strSplit[0]);
@@ -273,7 +273,7 @@ public class MonitoringFrame extends JFrame {
         if (label1Font != null) label1.setFont(label1Font);
         label1.setHorizontalAlignment(0);
         label1.setHorizontalTextPosition(0);
-        label1.setText("Monitoring Stations");
+        label1.setText("Surveillance de la pollution");
         mainPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         splitPane = new JSplitPane();
         mainPanel.add(splitPane, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
@@ -295,10 +295,10 @@ public class MonitoringFrame extends JFrame {
         realtimeAndRefreshPanel.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
         leftPanel.add(realtimeAndRefreshPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         realtimeCheckBox = new JCheckBox();
-        realtimeCheckBox.setText("realtime");
+        realtimeCheckBox.setText("Temps réel");
         realtimeAndRefreshPanel.add(realtimeCheckBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         refreshButton = new JButton();
-        refreshButton.setText("refresh");
+        refreshButton.setText("Rafraichir");
         realtimeAndRefreshPanel.add(refreshButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         stationDataPanel = new JPanel();
         stationDataPanel.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
@@ -324,7 +324,7 @@ public class MonitoringFrame extends JFrame {
         xAxisPanel.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         graphSettingsPanel.add(xAxisPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
-        label3.setText("x-axis");
+        label3.setText("Axe X");
         xAxisPanel.add(label3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         xAxisChoice = new JComboBox();
         xAxisChoice.setEnabled(true);
@@ -336,7 +336,7 @@ public class MonitoringFrame extends JFrame {
         yAxisPanel.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         graphSettingsPanel.add(yAxisPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JLabel label4 = new JLabel();
-        label4.setText("y-axis");
+        label4.setText("Axe Y");
         yAxisPanel.add(label4, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         yAxisChoice = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();

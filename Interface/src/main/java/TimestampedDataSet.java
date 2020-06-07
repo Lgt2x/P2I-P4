@@ -5,8 +5,6 @@ import org.knowm.xchart.internal.chartpart.Chart;
 import org.knowm.xchart.style.colors.XChartSeriesColors;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 public class TimestampedDataSet extends DataSet {
 
