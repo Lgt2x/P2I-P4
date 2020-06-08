@@ -43,6 +43,8 @@ public class MonitoringFrame extends JFrame {
 
 
     private JSplitPane splitPane;
+    private JTabbedPane tabbedPane1;
+    private JPanel mapPanel;
     private LectureBase bd;
     private Timer refreshTimer = new Timer(500, null);
 
@@ -144,7 +146,7 @@ public class MonitoringFrame extends JFrame {
             // "temperature|°C" => ["temperature", "°C"]
             String[] strSplit = grandeurs.get(i).split("\\|");
             tableModel.setValueAt(strSplit[0], i, 0);
-            tableModel.setValueAt(Math.round(values.get(i)*10.0)/10.0, i, 1);
+            tableModel.setValueAt(Math.round(values.get(i) * 10.0) / 10.0, i, 1);
             tableModel.setValueAt(strSplit[1], i, 2);
 
             xAxisChoice.addItem(strSplit[0]);
@@ -166,10 +168,10 @@ public class MonitoringFrame extends JFrame {
         if (resetChart)
             chart = null;
 
-        if (chart == null){
+        if (chart == null) {
             updateChart();
-            if(chart == null){
-                chart = QuickChart.getChart("Graphique", "x-axe", "y-axe", "serie", new double[] {0}, new double[] {0});
+            if (chart == null) {
+                chart = QuickChart.getChart("Graphique", "x-axe", "y-axe", "serie", new double[] { 0 }, new double[] { 0 });
             }
         }
 
@@ -266,21 +268,22 @@ public class MonitoringFrame extends JFrame {
         if (label1Font != null) label1.setFont(label1Font);
         label1.setHorizontalAlignment(0);
         label1.setHorizontalTextPosition(0);
-        label1.setText("Surveillance de la pollution");
+        label1.setText("Visualisation des données");
         mainPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         splitPane = new JSplitPane();
         mainPanel.add(splitPane, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
         rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        rightPanel.setLayout(new BorderLayout(0, 0));
         splitPane.setRightComponent(rightPanel);
-        final Spacer spacer1 = new Spacer();
-        rightPanel.add(spacer1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        final Spacer spacer2 = new Spacer();
-        rightPanel.add(spacer2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        tabbedPane1 = new JTabbedPane();
+        rightPanel.add(tabbedPane1, BorderLayout.CENTER);
         panelGraph = new JPanel();
         panelGraph.setLayout(new BorderLayout(0, 0));
         panelGraph.setForeground(new Color(-4521980));
-        rightPanel.add(panelGraph, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        tabbedPane1.addTab("Graphique", panelGraph);
+        mapPanel = new JPanel();
+        mapPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        tabbedPane1.addTab("Carte", mapPanel);
         leftPanel = new JPanel();
         leftPanel.setLayout(new GridLayoutManager(6, 1, new Insets(5, 5, 20, 5), -1, -1));
         splitPane.setLeftComponent(leftPanel);
@@ -308,6 +311,7 @@ public class MonitoringFrame extends JFrame {
         stationDataPanel.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         tableValeursStation = new JTable();
         tableValeursStation.setAutoResizeMode(4);
+        tableValeursStation.setAutoscrolls(true);
         tableValeursStation.setPreferredScrollableViewportSize(new Dimension(225, 300));
         scrollPane1.setViewportView(tableValeursStation);
         graphSettingsPanel = new JPanel();
@@ -362,4 +366,5 @@ public class MonitoringFrame extends JFrame {
      * @noinspection ALL
      */
     public JComponent $$$getRootComponent$$$() { return mainPanel; }
+
 }
