@@ -1,12 +1,18 @@
+import org.openstreetmap.gui.jmapviewer.Coordinate;
+
 public class Location {
 
-    double lat, longi;
-    String name;
+    public final Coordinate coordinate;
+    public final String name;
 
     public Location(double lat, double longi, String name) {
 
-        this.lat = lat;
-        this.longi = longi;
+        this.coordinate = new Coordinate(lat, longi);
         this.name = name;
+    }
+
+    public String toString() {
+
+        return name + "[lat=" + coordinate.getLat() + ", long=" + coordinate.getLon() + "]";
     }
 }

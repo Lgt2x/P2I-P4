@@ -104,11 +104,11 @@ public class LectureBase {
                                                                                          "SELECT symbol, seuilAlerteBas, seuilAlerteHaut " +
                                                                                          "FROM typeCapteur WHERE libelleType = ?");
 
-            this.selectAllStationLocations = this.connection.prepareStatement("SELECT nomStation, latitude, longitude, libelle " +
-                                                                              "FROM station, localisation, installation " +
-                                                                              "WHERE station.idStation = installation.idStation " +
-                                                                              "AND installation.idLocalisation = localisation.idLocalisation " +
-                                                                              "AND installation.dateDebut < now() < installation.dateFin");
+            this.selectAllStationLocations = this.connection.prepareStatement("SELECT nomStation, latitude, longitude, libelle\n" +
+                                                                              "FROM station, localisation, installation\n" +
+                                                                              "WHERE station.idStation = installation.idStation\n" +
+                                                                              "  AND installation.idLocalisation = localisation.idLocalisation\n" +
+                                                                              "  AND installation.dateDebut < now() AND now() < installation.dateFin");
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();

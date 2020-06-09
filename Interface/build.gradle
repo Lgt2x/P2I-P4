@@ -13,6 +13,9 @@ repositories {
     maven {
         url "https://dl.bintray.com/jetbrains/intellij-third-party-dependencies/"
     }
+    maven {
+        url "https://josm.openstreetmap.de/nexus/content/repositories/releases"
+    }
 }
 
 dependencies {
@@ -23,6 +26,7 @@ dependencies {
     // Pour les charts
     implementation "org.knowm.xchart:xchart:3.6.3"
     implementation "com.intellij:forms_rt:7.0.3"
+    implementation "org.openstreetmap.jmapviewer:jmapviewer:2.14"
 }
 
 shadowJar {

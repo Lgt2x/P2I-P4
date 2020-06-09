@@ -1,12 +1,12 @@
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYSeries;
 import org.knowm.xchart.internal.chartpart.Chart;
-import org.knowm.xchart.internal.series.Series;
+import org.openstreetmap.gui.jmapviewer.*;
+import org.openstreetmap.gui.jmapviewer.interfaces.MapMarker;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MonitoringFrame extends JFrame {
@@ -41,10 +42,12 @@ public class MonitoringFrame extends JFrame {
     private JComboBox xAxisChoice;
     private JComboBox yAxisChoice;
 
+    // Map related
+    private JPanel mapPanel;
+    private JMapViewer mapViewer;
 
     private JSplitPane splitPane;
-    private JTabbedPane tabbedPane1;
-    private JPanel mapPanel;
+    private JTabbedPane tabbedPane;
     private LectureBase bd;
     private Timer refreshTimer = new Timer(500, null);
 
@@ -74,11 +77,31 @@ public class MonitoringFrame extends JFrame {
                 exception.printStackTrace();
             }
         };
-        ActionListener chartUpdater = e -> buildChart(true);
+        ActionListener chartUpdater = e -> {
+            if (tabbedPane.getSelectedIndex() == 0) // graphique sélectionné
+                buildChart();
+        };
+        ActionListener mapUpdater = e -> {
+            if (tabbedPane.getSelectedIndex() != 0) // carte sélectionnée
+                updateMap();
+        };
+
+        tabbedPane.addChangeListener(e -> {
+            if (tabbedPane.getSelectedIndex() == 0)
+                buildChart();
+            else
+                updateMap();
+        });
 
         choixStation.addActionListener(dataUpdater);
         refreshButton.addActionListener(dataUpdater);
+        refreshButton.addActionListener(mapUpdater);
+
+        /* on ne met pas chart update car dataupdater met à jour les données ce qui change regénère les champs dans
+         * les combobox. ça les met à jour et ça trigger le chartUpdater. si on met chartUpdater sur refreshTimer, on regénère 2 fois le chart
+         */
         refreshTimer.addActionListener(dataUpdater);
+        refreshTimer.addActionListener(mapUpdater);
 
         realtimeCheckBox.addActionListener(e -> {
 
@@ -93,7 +116,8 @@ public class MonitoringFrame extends JFrame {
 
         recupNomsStations();
         majMesures(0);
-        buildChart(true);
+        buildChart();
+        buildMap();
     }
 
     public void recupNomsStations() throws Exception {
@@ -163,18 +187,13 @@ public class MonitoringFrame extends JFrame {
         tableValeursStation.setModel(tableModel);
     }
 
-    public void buildChart(boolean resetChart) {
+    public void buildChart() {
 
-        if (resetChart)
-            chart = null;
+        chart = null;
 
-        if (chart == null) {
-            updateChart();
-            if (chart == null) {
-                chart = QuickChart.getChart("Graphique", "x-axe", "y-axe", "serie", new double[] { 0 }, new double[] { 0 });
-            }
-        }
-
+        updateChart();
+        if (chart == null)
+            chart = QuickChart.getChart("Graphique", "x-axe", "y-axe", "serie", new double[] { 0 }, new double[] { 0 });
 
         if (chartPanel != null)
             panelGraph.remove(chartPanel);
@@ -218,9 +237,8 @@ public class MonitoringFrame extends JFrame {
                     dataSeries = series;
             }
 
-            if (dataSeries == null) {
+            if (dataSeries == null)
                 return;
-            }
 
             for (XYSeries threshold : thresholds) {
 
@@ -240,6 +258,33 @@ public class MonitoringFrame extends JFrame {
             System.err.println("Impossible de générer un DataSet correct. Le graph n'a pas pu être construit");
             e.printStackTrace();
         }
+    }
+
+    public void buildMap() {
+
+        if (mapViewer == null) {
+
+            mapViewer = new JMapViewer();
+            mapViewer.setDisplayPosition(new Coordinate(45.78123220094288, 4.865570068359375), 14);
+
+            mapPanel.add(mapViewer);
+            mapPanel.updateUI();
+        }
+
+        updateMap();
+    }
+
+    public void updateMap() {
+
+        if (mapViewer == null)
+            return;
+
+        mapViewer.getMapMarkerList().clear();
+
+        HashMap<String, Location> locationsMap = bd.getAllStationLocations();
+        Style markerStyle = new Style(Color.BLACK, Color.GREEN, null, MapMarkerDot.getDefaultFont());
+        for (String station : locationsMap.keySet())
+            mapViewer.addMapMarker(new MapMarkerDot(null, station, locationsMap.get(station).coordinate, markerStyle));
     }
 
     {
@@ -275,15 +320,15 @@ public class MonitoringFrame extends JFrame {
         rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout(0, 0));
         splitPane.setRightComponent(rightPanel);
-        tabbedPane1 = new JTabbedPane();
-        rightPanel.add(tabbedPane1, BorderLayout.CENTER);
+        tabbedPane = new JTabbedPane();
+        rightPanel.add(tabbedPane, BorderLayout.CENTER);
         panelGraph = new JPanel();
         panelGraph.setLayout(new BorderLayout(0, 0));
         panelGraph.setForeground(new Color(-4521980));
-        tabbedPane1.addTab("Graphique", panelGraph);
+        tabbedPane.addTab("Graphique", panelGraph);
         mapPanel = new JPanel();
-        mapPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        tabbedPane1.addTab("Carte", mapPanel);
+        mapPanel.setLayout(new BorderLayout(0, 0));
+        tabbedPane.addTab("Carte", mapPanel);
         leftPanel = new JPanel();
         leftPanel.setLayout(new GridLayoutManager(6, 1, new Insets(5, 5, 20, 5), -1, -1));
         splitPane.setLeftComponent(leftPanel);
