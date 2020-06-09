@@ -274,7 +274,15 @@ public class MonitoringFrame extends JFrame {
         if (mapViewer == null) {
             mapViewer = new JMapViewer();
             mapPanel.add(mapViewer);
-            //mapPanel.updateUI();
+
+            HashMap<String, Location> locationsMap = bd.getAllStationLocations();
+
+            double Glat = 0, Glon = 0;
+            for (Location l : locationsMap.values()) {
+                Glat += l.coordinate.getLat();
+                Glon += l.coordinate.getLon();
+            }
+            mapViewer.setDisplayPosition(new Coordinate(Glat / locationsMap.size(), Glon / locationsMap.size()), 16);
         }
 
         updateMap();
@@ -288,14 +296,6 @@ public class MonitoringFrame extends JFrame {
         mapViewer.removeAllMapMarkers();
 
         HashMap<String, Location> locationsMap = bd.getAllStationLocations();
-
-        double Glat = 0, Glon = 0;
-        for (Location l : locationsMap.values()) {
-            Glat += l.coordinate.getLat();
-            Glon += l.coordinate.getLon();
-        }
-        mapViewer.setDisplayPosition(new Coordinate(Glat / locationsMap.size(), Glon / locationsMap.size()), 16);
-
         Style markerStyle = new Style(Color.BLACK, Color.GREEN, null, MapMarkerDot.getDefaultFont());
         for (String station : locationsMap.keySet())
             mapViewer.addMapMarker(new MapMarkerDot(null, station, locationsMap.get(station).coordinate, markerStyle));
